@@ -22,49 +22,26 @@
 (defn dec-long-array [array index]
   (aset ^longs array index (unchecked-dec (aget ^longs array index))))
 
-(defn array-bit-shift-left [src-array tar-array src-len tar-len left-shift]
-  (if (zero? left-shift)
-    (System/arraycopy src-array 0 tar-array 0 src-len)
-    (let [right-shift (- 32 left-shift)]
-      (loop [src-index 0, carry 0]
-        (if (< src-index src-len)
-          (let [src-val (long-mask (aget ^ints src-array src-index))]
-            (aset ^ints tar-array src-index (unchecked-int (bit-or (bit-shift-left src-val left-shift) carry)))
-            (recur (unchecked-inc-int src-index) (unsigned-bit-shift-right src-val right-shift)))
-          (if (> tar-len src-len)
-            (aset ^ints tar-array src-len (unchecked-int carry))))))))
-
-(defn array-bit-shift-right [tar-array tar-len right-shift]
-  (if-not (zero? right-shift)
-    (let [left-shift (- 32 right-shift)]
-      (loop [tar-index (- tar-len 1), carry 0]
-        (when (>= tar-index 0)
-          (let [tar-val (long-mask (aget ^ints tar-array tar-index))]
-            (aset ^ints tar-array tar-index (unchecked-int (bit-or
-                                                             carry
-                                                             (unsigned-bit-shift-right tar-val right-shift))))
-            (recur (unchecked-dec-int tar-index) (bit-shift-left tar-val left-shift))))))))
-
 (defn number-leading-zeroes? [n]
   (if (zero? n)
     32
-    (let [n-array (int-array 2)]
-      (aset ^ints n-array 0 n)
-      (when (<= (aget ^ints n-array 0) 0x0000FFFF)
-        (aset ^ints n-array 0 (bit-shift-left (aget ^ints n-array 0) 16))
-        (aset ^ints n-array 1 (+ (aget ^ints n-array 1) 16)))
-      (when (<= (aget ^ints n-array 0) 0x00FFFFFF)
-        (aset ^ints n-array 0 (bit-shift-left (aget ^ints n-array 0) 8))
-        (aset ^ints n-array 1 (+ (aget ^ints n-array 1) 8)))
-      (when (<= (aget ^ints n-array 0) 0x0FFFFFFF)
-        (aset ^ints n-array 0 (bit-shift-left (aget ^ints n-array 0) 4))
-        (aset ^ints n-array 1 (+ (aget ^ints n-array 1) 4)))
-      (when (<= (aget ^ints n-array 0) 0x3FFFFFFF)
-        (aset ^ints n-array 0 (bit-shift-left (aget ^ints n-array 0) 2))
-        (aset ^ints n-array 1 (+ (aget ^ints n-array 1) 2)))
-      (when (<= (aget ^ints n-array 0) 0x7FFFFFFF)
-        (aset ^ints n-array 1 (+ (aget ^ints n-array 1) 2)))
-      (aget ^ints n-array 1))))
+    (let [n-array (long-array 2)]
+      (aset ^longs n-array 0 (long-mask n))
+      (when (<= (aget ^longs n-array 0) 0x0000FFFF)
+        (aset ^longs n-array 0 (bit-shift-left (aget ^longs n-array 0) 16))
+        (aset ^longs n-array 1 (+ (aget ^longs n-array 1) 16)))
+      (when (<= (aget ^longs n-array 0) 0x00FFFFFF)
+        (aset ^longs n-array 0 (bit-shift-left (aget ^longs n-array 0) 8))
+        (aset ^longs n-array 1 (+ (aget ^longs n-array 1) 8)))
+      (when (<= (aget ^longs n-array 0) 0x0FFFFFFF)
+        (aset ^longs n-array 0 (bit-shift-left (aget ^longs n-array 0) 4))
+        (aset ^longs n-array 1 (+ (aget ^longs n-array 1) 4)))
+      (when (<= (aget ^longs n-array 0) 0x3FFFFFFF)
+        (aset ^longs n-array 0 (bit-shift-left (aget ^longs n-array 0) 2))
+        (aset ^longs n-array 1 (+ (aget ^longs n-array 1) 2)))
+      (when (<= (aget ^longs n-array 0) 0x7FFFFFFF)
+        (aset ^longs n-array 1 (+ (aget ^longs n-array 1) 1)))
+      (aget ^longs n-array 1))))
 
 (defn number-trailing-zeroes? [n]
   (- 32 (number-leading-zeroes? (bit-and (bit-not n) (unchecked-add n -1)))))
@@ -75,6 +52,65 @@
     (if (and (< a-index (- a-len 1)) (zero? (aget ^ints a-array a-index)))
       (recur (inc a-index))
       (+ (bit-shift-left a-index 5) (number-trailing-zeroes? (aget ^ints a-array a-index))))))
+
+(defn array-bit-shift-left [src-array src-len left-shift leading-zeroes]
+  (let [tar-len (+ src-len leading-zeroes)
+        tar-array (int-array tar-len)
+        right-shift (- 32 left-shift)]
+    (if (zero? left-shift)
+      (System/arraycopy src-array 0 tar-array 0 src-len)
+      (loop [src-index 0, carry 0]
+        (if (< src-index src-len)
+          (let [src-val (long-mask (aget ^ints src-array src-index))]
+            (aset ^ints tar-array src-index (unchecked-int (bit-or (bit-shift-left src-val left-shift) carry)))
+            (recur (unchecked-inc-int src-index) (unsigned-bit-shift-right src-val right-shift)))
+          (if (> tar-len src-len)
+            (aset ^ints tar-array src-len (unchecked-int carry))))))
+    tar-array))
+
+(defn array-bit-shift-right [tar-array tar-len shift-num]
+  (if (zero? shift-num)
+    tar-array
+    (let [left-shift (- 32 shift-num)]
+      (loop [tar-index (- tar-len 1), carry 0]
+        (when (>= tar-index 0)
+          (let [tar-val (long-mask (aget ^ints tar-array tar-index))]
+            (aset ^ints tar-array tar-index (unchecked-int (bit-or
+                                                             carry
+                                                             (unsigned-bit-shift-right tar-val shift-num))))
+            (recur (unchecked-dec-int tar-index) (bit-shift-left tar-val left-shift)))))
+      tar-array)))
+
+(defn array-int-shift-left [src-array src-len shift-num leading-zeroes]
+  (let [tar-array (int-array (+ src-len shift-num leading-zeroes))]
+    (System/arraycopy src-array 0 tar-array shift-num src-len)
+    tar-array))
+
+(defn array-int-shift-right [src-array src-len shift-num]
+  (if-not (zero? shift-num)
+    (loop [t-index 0, s-index shift-num]
+      (when (< s-index src-len)
+        (aset ^ints src-array t-index (aget ^ints src-array s-index))
+        (aset ^ints src-array s-index 0)
+        (recur (inc t-index) (inc s-index)))))
+  src-array)
+
+(defn array-shift-left [src-array src-len shift-num]
+  (let [int-shift (unsigned-bit-shift-right shift-num 5)
+        bit-shift (bit-and shift-num 0x3F)
+        zero-num (number-leading-zeroes? (aget ^ints src-array (dec src-len)))
+        tar-array (array-int-shift-left src-array src-len int-shift (if (< zero-num bit-shift) 1 0))]
+    (if (zero? bit-shift)
+      tar-array
+      (array-bit-shift-left tar-array (alength tar-array) bit-shift 0))))
+
+(defn array-shift-right [src-array src-len shift-num]
+  (let [int-shift (unsigned-bit-shift-right shift-num 5)
+        bit-shift (bit-and shift-num 0x3F)
+        tar-array (array-int-shift-right src-array src-len int-shift)]
+    (if (zero? bit-shift)
+      tar-array
+      (array-bit-shift-right tar-array src-len bit-shift))))
 
 ;;Knuth Division
 (defn div-int64-by-int32 [quotrem a-long b]
@@ -163,9 +199,9 @@
         b-len (alength ^ints b-array)
         q-len (+ (- a-len b-len) 1)
         norm-a-len (+ a-len 1)
-        shift-num (Integer/numberOfLeadingZeros (aget ^ints b-array (- b-len 1)))
-        norm-a-array (array-bit-shift-left a-array (int-array norm-a-len) a-len norm-a-len shift-num)
-        norm-b-array (array-bit-shift-left b-array (int-array b-len) b-len b-len shift-num)
+        shift-num (number-leading-zeroes? (aget ^ints b-array (- b-len 1)))
+        norm-a-array (array-bit-shift-left a-array a-len shift-num 1)
+        norm-b-array (array-bit-shift-left b-array b-len shift-num 0)
         q-array (int-array q-len)
         quotrem (long-array 2)
         b-high (aget ^ints norm-b-array (- b-len 1))
