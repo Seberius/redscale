@@ -97,7 +97,7 @@
 
 (defn array-shift-left [src-array src-len shift-num]
   (let [int-shift (unsigned-bit-shift-right shift-num 5)
-        bit-shift (bit-and shift-num 0x3F)
+        bit-shift (bit-and shift-num 0x1F)
         zero-num (number-leading-zeroes? (aget ^ints src-array (dec src-len)))
         tar-array (array-int-shift-left src-array src-len int-shift (if (< zero-num bit-shift) 1 0))]
     (if (zero? bit-shift)
@@ -106,7 +106,7 @@
 
 (defn array-shift-right [src-array src-len shift-num]
   (let [int-shift (unsigned-bit-shift-right shift-num 5)
-        bit-shift (bit-and shift-num 0x3F)
+        bit-shift (bit-and shift-num 0x1F)
         tar-array (array-int-shift-right src-array src-len int-shift)]
     (if (zero? bit-shift)
       tar-array
@@ -121,6 +121,25 @@
         (let [tar-array (int-array (inc a-index))]
           (System/arraycopy a-array 0 tar-array 0 (inc a-index))
           tar-array)))))
+
+(defn array-compare [a-array b-array]
+  (let [a-len (alength a-array)
+        b-len (alength b-array)]
+    (if (not= a-len b-len)
+      (if (> a-len b-len) 1 -1)
+      (loop [a-index (dec a-len)]
+        (if (>= a-index 0)
+          (if (not= (aget ^ints a-array a-index) (aget ^ints b-array a-index))
+            (if (> (unsigned-int-mask (aget ^ints a-array a-index))
+                   (unsigned-int-mask (aget ^ints b-array a-index)))
+              1 -1)
+            (recur (dec a-index)))
+          0)))))
+
+(defn array-zero? [a-array]
+  (if (and (= (alength a-array) 1) (= (aget ^ints a-array 0) 0))
+    true
+    false))
 
 ;;Knuth Division
 (defn div-int64-by-int32 [quotrem a-long b]
@@ -204,7 +223,7 @@
                                               (aget ^ints a-array (+ q-index b-len))
                                               (aget ^longs carry 1))))))
 
-(defn divide-f [n-array d-array]
+(defn divide-array [n-array d-array]
   (let [n-len (alength ^ints n-array)
         d-len (alength ^ints d-array)
         q-len (+ (- n-len d-len) 1)
@@ -239,7 +258,7 @@
     (vector q-array a-array)))
 
 ;; Multiplication
-(defn multiply-f [a-array b-array]
+(defn multiply-array [a-array b-array]
   (let [a-len (int (alength ^ints a-array))
         b-len (int (alength ^ints b-array))
         p-array (int-array (+ a-len b-len))
@@ -264,7 +283,7 @@
     p-array))
 
 ;;Addition
-(defn add-f [a-array b-array]
+(defn add-array [a-array b-array]
   (let [a-len (int (alength ^ints a-array))
         b-len (int (alength ^ints b-array))
         s-len (int (+ (max a-len b-len) 1))
@@ -284,7 +303,7 @@
     s-array))
 
 ;;Subtraction
-(defn subtract-f [a-array b-array]
+(defn subtract-array [a-array b-array]
   (let [a-len (alength ^ints a-array)
         b-len (alength ^ints b-array)
         d-array (int-array a-len)
@@ -310,18 +329,29 @@
 
 ;;GCD
 (defn array-binary-gcd [a-array b-array]
-  (let [shift-num (min (array-number-trailing-zeroes? a-array (alength a-array))
-                       (array-number-trailing-zeroes? b-array (alength b-array)))
-        a-array (array-shift-right a-array (alength a-array) shift-num)
-        b-array (array-shift-right b-array (alength b-array) shift-num)]
-    ))
+  (let [a-zero (array-number-trailing-zeroes? a-array (alength a-array))
+        b-zero (array-number-trailing-zeroes? b-array (alength b-array))
+        shift-num (min a-zero b-zero)
+        a-array (trim-leading-zeroes (array-shift-right a-array (alength a-array) a-zero) 0)
+        b-array (trim-leading-zeroes (array-shift-right b-array (alength b-array) b-zero) 0)]
+    (loop [a-val a-array, b-val b-array]
+      (let [a-len (alength a-val), b-len (alength b-val)]
+        (cond
+          (array-zero? b-val) (array-shift-left a-val (alength a-val) shift-num)
+
+          (= (and (aget ^ints b-val 0) 1) 0)
+          (recur a-val (trim-leading-zeroes (array-shift-right b-val b-len (array-number-trailing-zeroes? b-val)) b-len))
+
+          (= (array-compare a-val b-val) 1) (recur b-val (trim-leading-zeroes (subtract-array a-val b-val) a-len))
+
+          :else (recur a-val (trim-leading-zeroes (subtract-array b-val a-val) b-len)))))))
 
 (defn gcd-f [a-array b-array]
   (loop [a-val a-array, b-val b-array]
-      (if (< (Math/abs (- (alength a-val) (alength b-val))) 2)
-        (let [[_ r-val] (divide-f a-array b-array)]
-          (recur (trim-leading-zeroes b-val) (trim-leading-zeroes r-val)))
-        (array-binary-gcd a-val b-val))))
+    (if (< (Math/abs (- (alength a-val) (alength b-val))) 2)
+      (let [[_ r-val] (divide-array a-array b-array)]
+        (recur (trim-leading-zeroes b-val 0) (trim-leading-zeroes r-val 0)))
+      (array-binary-gcd a-val b-val))))
 
 ;;Public Functions
 (defn to-string [val-a])
