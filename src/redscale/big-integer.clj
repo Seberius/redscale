@@ -329,20 +329,22 @@
 
 ;;GCD
 (defn array-binary-gcd [a-array b-array]
-  (let [a-zero (array-number-trailing-zeroes? a-array (alength a-array))
-        b-zero (array-number-trailing-zeroes? b-array (alength b-array))
+  (let [a-len (alength a-array)
+        b-len (alength b-array)
+        a-zero (array-number-trailing-zeroes? a-array a-len)
+        b-zero (array-number-trailing-zeroes? b-array b-len)
         shift-num (min a-zero b-zero)
-        a-array (trim-leading-zeroes (array-shift-right a-array (alength a-array) a-zero) 0)
-        b-array (trim-leading-zeroes (array-shift-right b-array (alength b-array) b-zero) 0)]
+        a-array (trim-leading-zeroes (array-shift-right a-array a-len a-zero) a-len)
+        b-array (trim-leading-zeroes (array-shift-right b-array b-len b-zero) b-len)]
     (loop [a-val a-array, b-val b-array]
       (let [a-len (alength a-val), b-len (alength b-val)]
         (cond
-          (array-zero? b-val) (array-shift-left a-val (alength a-val) shift-num)
+          (array-zero? b-val) (array-shift-left a-val a-len shift-num)
 
-          (= (and (aget ^ints b-val 0) 1) 0)
-          (recur a-val (trim-leading-zeroes (array-shift-right b-val b-len (array-number-trailing-zeroes? b-val)) b-len))
+          (= (bit-and (aget ^ints b-val 0) 1) 0)
+          (recur a-val (trim-leading-zeroes (array-shift-right b-val b-len (array-number-trailing-zeroes? b-val b-len)) b-len))
 
-          (= (array-compare a-val b-val) 1) (recur b-val (trim-leading-zeroes (subtract-array a-val b-val) a-len))
+          (= (compare-arrays a-val b-val) 1) (recur b-val (trim-leading-zeroes (subtract-array a-val b-val) a-len))
 
           :else (recur a-val (trim-leading-zeroes (subtract-array b-val a-val) b-len)))))))
 
