@@ -46,6 +46,9 @@
 (defn number-trailing-zeroes? [n]
   (- 32 (number-leading-zeroes? (bit-and (bit-not n) (unchecked-add n -1)))))
 
+(defn array-zero? [a-array]
+  (= (alength a-array) 0))
+
 ;Assumes non-zero
 (defn array-number-trailing-zeroes? [a-array a-len]
   (loop [a-index 0]
@@ -138,9 +141,6 @@
               1 -1)
             (recur (dec a-index)))
           0)))))
-
-(defn array-zero? [a-array]
-  (= (alength a-array) 0))
 
 ;;Knuth Division
 (defn div-int64-by-int32 [quotrem a-long b]
@@ -354,7 +354,7 @@
           (= (bit-and (aget ^ints b-val 0) 1) 0)
           (recur a-val (array-shift-right b-val b-len (array-number-trailing-zeroes? b-val b-len)))
 
-          (= (compare-arrays a-val b-val) 1) (recur b-val (subtract-array a-val b-val))
+          (= (array-compare a-val b-val) 1) (recur b-val (subtract-array a-val b-val))
 
           :else (recur a-val (subtract-array b-val a-val)))))))
 
@@ -366,20 +366,34 @@
       (array-binary-gcd a-val b-val))))
 
 ;;ToString
-(def radix-divisors
+(def radix-divisor-index
   [nil nil
-   (int-array [0 1073741824])           (int-array [-1201670133 943559024]) (int-array [0 1073741824])
-   (int-array [-99612771 1734723475])   (int-array [-520093696 1103240376]) (int-array [1344430353 910326151])
-   (int-array [0 268435456])            (int-array [-400556711 314519674])  (int-array [-1486618624 232830643])
-   (int-array [-1019239111 1294519126]) (int-array [0 516560652])           (int-array [1645991757 2014081906])
-   (int-array [2105606144 507094277])   (int-array [1039759105 1529326745]) (int-array [0 268435456])
-   (int-array [2116147697 666459801])   (int-array [1012695040 1570824677]) (int-array [-281002215 186033240])
-   (int-array [-1879048192 381469726])  (int-array [-641667255 755283965])  (int-array [-895336448 1448630651])
-   (int-array [-1826982473 117355110])  (int-array [0 204073344])           (int-array [839070905 346944695])
-   (int-array [2025824256 577688420])   (int-array [-1201670133 943559024]) (int-array [-1677721600 1513890787])
-   (int-array [-1254200463 82378923])   (int-array [403968000 123735750])   (int-array [-293403007 183392032])
-   (int-array [0 268435456])            (int-array [1331628417 388335789])  (int-array [-802418688 555631863])
-   (int-array [-261202831 786786085])   (int-array [-520093696 1103240376])])
+   (int-array [0           1073741824]) (int-array [-1201670133 943559024])  (int-array [0           1073741824])
+   (int-array [-99612771   1734723475]) (int-array [-520093696  1103240376]) (int-array [1344430353  910326151])
+   (int-array [0           268435456])  (int-array [-400556711  314519674])  (int-array [-1486618624 232830643])
+   (int-array [-1019239111 1294519126]) (int-array [0           516560652])  (int-array [1645991757  2014081906])
+   (int-array [2105606144  507094277])  (int-array [1039759105  1529326745]) (int-array [0           268435456])
+   (int-array [2116147697  666459801])  (int-array [1012695040  1570824677]) (int-array [-281002215  186033240])
+   (int-array [-1879048192 381469726])  (int-array [-641667255  755283965])  (int-array [-895336448  1448630651])
+   (int-array [-1826982473 117355110])  (int-array [0           204073344])  (int-array [839070905   346944695])
+   (int-array [2025824256  577688420])  (int-array [-1201670133 943559024])  (int-array [-1677721600 1513890787])
+   (int-array [-1254200463 82378923])   (int-array [403968000   123735750])  (int-array [-293403007  183392032])
+   (int-array [0           268435456])  (int-array [1331628417  388335789])  (int-array [-802418688  555631863])
+   (int-array [-261202831  786786085])  (int-array [-520093696  1103240376])])
+
+(def radix-rem-index
+  [nil nil
+   62 39 31 27 24 22 20
+   19 18 18 17 17 16 16
+   15 15 15 14 14 14 14
+   13 13 13 13 13 13 12
+   12 12 12 12 12 12 12])
+
+(def zero-char
+  (repeat "0"))
+
+(defn zero-str [n]
+  (apply str (take n zero-char)))
 
 (defn array-to-long [a-array]
   (if (array-zero? a-array)
@@ -389,15 +403,20 @@
       (bit-or (bit-shift-left (long-mask (aget ^ints a-array 1)) 32) (long-mask (aget ^ints a-array 0))))))
 
 (defn array-to-str [a-signum a-array radix]
-  (let [str-len (+ (/ (+ (* (alength a-array) 4) 6) 7) 1)
+  (let [str-len (* (/ (+ (* (alength a-array) 4) 6) 7) 2)
         str-array (make-array String str-len)]
     (loop [a-array a-array, str-index (dec str-len)]
-      (if-not (array-zero? a-array)
-        (let [[q r] (divide-f a-array (nth radix-divisors radix))]
-          (aset ^String str-array str-index (Long/toString (long (array-to-long r)) radix))
-          (recur q (dec str-index)))
-        (if (= a-signum -1)
-          (aset ^String str-array str-index "-"))))
+      (let [[q r] (divide-f a-array (nth radix-divisor-index radix))
+            str-val (Long/toString (long (array-to-long r)) radix)]
+        (if-not (array-zero? q)
+          (do
+            (aset ^String str-array str-index str-val)
+            (aset ^String str-array (dec str-index) (zero-str (- (nth radix-rem-index radix) (.length str-val))))
+            (recur q (- str-index 2)))
+          (do
+            (aset ^String str-array str-index str-val)
+            (if (= a-signum -1)
+              (aset ^String str-array (dec str-index) "-"))))))
     (apply str str-array)))
 
 ;;Public Functions
