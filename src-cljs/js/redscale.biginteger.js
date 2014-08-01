@@ -1,6 +1,10 @@
 var INT16_MASK = 0xFFFF;
 var INT32_UNSIGNED = 0x80000000;
 
+function isArrayZero( aArray ) {
+  return aArray.length === 0;
+}
+
 function numberLeadingZeroes( int ) {
   var
   zeroCount = 0;
@@ -30,15 +34,20 @@ function numberTrailingZeroes( int ) {
   return 16 - numberLeadingZeroes( (~ int) & (int - 1) );
 }
 
-function isArrayZero( aArray ) {
-  return aArray.length == 0;
+function arrayNumberLeadingZeroes( aArray, aLen ) {
+  var
+  aIndex;
+
+  for ( aIndex = aLen - 1; (aIndex >= 0) && (aArray[aIndex] == 0); aIndex-- ) { }
+
+  return ((aLen - 1 - aIndex) << 4) + numberLeadingZeroes( aArray[aIndex] );
 }
 
 function arrayNumberTrailingZeroes( aArray, aLen ) {
   var
   aIndex;
 
-  for ( aIndex = 0; (aIndex < (- aLen 1)) && (aArray[aIndex] == 0); aIndex++ ) { }
+  for ( aIndex = 0; (aIndex < (aLen - 1)) && (aArray[aIndex] == 0); aIndex++ ) { }
 
   return (aIndex << 4) + numberTrailingZeroes( aArray[aIndex] );
 }
@@ -84,11 +93,11 @@ function arrayBitShiftLeft( srcArray, srcLen, leftShift, leadingZeroes ) {
 
   if ( leftShift == 0 ) { return arrayCopy( srcArray, 0, tarArray, 0, srcLen ); }
 
-  for ( srcIndex = 0, tarIndex = intShift; srcIndex < srcLen; srcIndex++, tarIndex ) {
+  for ( srcIndex = intShift, tarIndex = 0; srcIndex < srcLen; srcIndex++, tarIndex++ ) {
     var srcVal = srcArray[srcIndex] & INT16_MASK;
 
-    tarArray[tarIndex] = ((srcVal << leftShift) | carry) & INT16_MASK;
-    carry = srcVal >>> rightShift;
+    tarArray[tarIndex] = ((srcVal << leftBitShift) | carry) & INT16_MASK;
+    carry = srcVal >>> rightBitShift;
   }
 
   if ( tarLen > srcLen ) { tarArray[tarIndex] = carry; }
@@ -101,20 +110,21 @@ function arrayBitShiftRight( srcArray, srcLen, rightShift ) {
   intShift = rightShift >>> 4,
   rightBitShift = rightShift & 0xF,
   leftBitShift = 16 - rightBitShift,
-  extraShift = (rightShift + leadingZeroes( srcArray[srcLen - 1] )) >>> 4,
+  leadingZeroes = arrayNumberLeadingZeroes( srcArray, srcLen ),
+  extraShift = (rightShift + leadingZeroes) >>> 4,
   tarLen = srcLen - intShift - extraShift,
   tarArray = new Int16Array( tarLen ),
-  carry = 0,
+  carry = (srcArray[tarLen + intShift] << leftBitShift) & INT16_MASK,
   srcIndex,
   tarIndex;
 
   if ( rightShift == 0 ) { return arrayCopy( srcArray, 0, tarArray, 0, srcLen ) }
 
-  for ( srcIndex = intShift, tarIndex = 0; tarIndex < tarLen; srcIndex++, tarIndex ) {
+  for ( srcIndex = tarLen + intShift - 1, tarIndex = tarLen - 1; tarIndex >= 0; srcIndex--, tarIndex-- ) {
     var srcVal = srcArray[srcIndex] & INT16_MASK;
 
-    tarArray[tarIndex] = ((srcVal >>> rightShift) | carry) & INT16_MASK;
-    carry = srcVal << leftShift;
+    tarArray[tarIndex] = (srcVal >>> rightBitShift) | carry;
+    carry = (srcVal << leftBitShift) & INT16_MASK;
   }
 
   return tarArray;
@@ -227,12 +237,12 @@ function divCorrection( quot, rem, aLow, bLow, bHighInt32 ) {
 
     testProd -= (bLow & INT16_MASK);
     testRem = (rem << 16) | (aLow & INT16_MASK);
-    if ( ((rem >>> 16) = 0) && ((testProd ^ INT32_UNSIGNED) > (testRem ^ INT32_UNSIGNED)) ) {
+    if ( ((rem >>> 16) == 0) && ((testProd ^ INT32_UNSIGNED) > (testRem ^ INT32_UNSIGNED)) ) {
       quot--;
     }
   }
 
-  return quot & INT16_MASK;
+  return (rem << 16) | (quot & INT16_MASK);
 }
 
 function divMulSub( quot, aArray, bArray, qIndex, bLen ) {
@@ -244,15 +254,15 @@ function divMulSub( quot, aArray, bArray, qIndex, bLen ) {
   for ( aIndex = qIndex, bIndex = 0; bIndex < bLen; aIndex++, bIndex++ ) {
     var
     prod = (bArray[bIndex] & INT16_MASK) * (quot & INT16_MASK),
-    diff = (aArray & INT16_MASK) - (prod & INT16_MASK) - (carry & INT16_MASK);
+    diff = (aArray[aIndex] & INT16_MASK) - (prod & INT16_MASK) - (carry & INT16_MASK);
 
     aArray[aIndex] = diff & INT16_MASK;
     carry = ((prod >> 16) & INT16_MASK) - ((diff >> 16) & INT16_MASK);
   }
 
-  aArray[aIndex] = ((aArray[aIndex] & INT16_MASK) - (carry & INT16_MASK)) & INT16_MASK;
+  aArray[aIndex] = (aArray[aIndex] & INT16_MASK) - (carry & INT16_MASK);
 
-  return aArray;
+  return carry;
 }
 
 function divAdd( aArray, bArray, qIndex, bLen ) {
@@ -271,7 +281,7 @@ function divAdd( aArray, bArray, qIndex, bLen ) {
 
   aArray[aIndex] += carry;
 
-  return aArray;
+  return carry;
 }
 
 function divideArray( nArray, nLen, dArray, dLen ) {
@@ -282,11 +292,9 @@ function divideArray( nArray, nLen, dArray, dLen ) {
   aArray = arrayBitShiftLeft( nArray, nLen, shiftNum, 1 ),
   bArray = arrayBitShiftLeft( dArray, dLen, shiftNum, 0 ),
   qArray = new Int16Array( qLen ),
-  bHigh = bArray[bLen - 1],
+  bHigh = bArray[dLen - 1],
   bHighInt32 = bHigh & INT16_MASK,
-  bLow = bArray[bLen - 2],
-  quot,
-  rem,
+  bLow = bArray[dLen - 2],
   qIndex,
   aIndex;
 
@@ -294,8 +302,10 @@ function divideArray( nArray, nLen, dArray, dLen ) {
     var
     aHigh = aArray[aIndex],
     aMed = aArray[aIndex - 1],
-    aInt32 = ((aHigh & INT16_MASK) << 16) | (aMed & INT16_MASK)
-    candidateQuotRem;
+    aInt32 = ((aHigh & INT16_MASK) << 16) | (aMed & INT16_MASK),
+    candidateQuotRem = 0,
+    quot,
+    rem;
 
     if ( aHigh == bHigh ) {
       quot = -1;
@@ -307,14 +317,16 @@ function divideArray( nArray, nLen, dArray, dLen ) {
     }
 
     if ( quot != 0 ) {
-      divCorrection( quot, rem, aLow, bLow, bHighInt32 );
-      divMulSub( quot, aArray, bArray, qIndex, dLen );
+      quot = divCorrection( quot, rem, aArray[aIndex - 2], bLow, bHighInt32 ) & INT16_MASK;
+      rem = divMulSub( quot, aArray, bArray, qIndex, dLen );
 
       if ( rem < 0 ) {
         divAdd( aArray, bArray, qIndex, dLen );
         quot--;
       }
     }
+
+    qArray[qIndex] = quot;
   }
 
   return [trimLeadingZeroes( qArray, qLen ), arrayBitShiftRight( aArray, aLen, shiftNum )];
