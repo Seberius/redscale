@@ -1,22 +1,24 @@
-var INT16_MASK = 0xFFFF;
-var INT32_UNSIGNED = 0x80000000;
-var RADIX_DIVISOR_INDEX = [null, null,
-                           [0, 16384], [-19493, 17734], [0, 16384], [29589, 18626], [-10240, 5535],
-                           [-25449, 30171], [0, 16384], [-28343, 5911], [-13824, 15258], [-9375, 3270],
-                           [0, 6561], [4129, 12447], [-16128, 22518], [7023, 2607], [0, 4096],
-                           [17777, 6261], [-17280, 9341], [26235, 13639], [16384, 19531], [28189, 27482],
-                           [2624, 1730], [-9935, 2258], [0, 2916], [19025, 3725], [-20928, 4713],
-                           [-28343, 5911], [4096, 7353], [18585, 9076], [-22464, 11123], [15169, 13542],
-                           [0, 16384], [15553, 19706], [-10176, 23571], [-19175, 28049], [-23552, 922]];
-var RADIX_REM_INDEX = [null, null,
-                       30, 19, 15, 13, 11,
-                       11, 10, 9, 9, 8,
-                       8, 8, 8, 7, 7,
-                       7, 7, 7, 7, 7,
-                       6, 6, 6, 6, 6,
-                       6, 6, 6, 6, 6,
-                       6, 6, 6, 6, 5];
-var ZERO_STRING = "00000000000000000000000000000";
+var
+INT16_MASK = 0xFFFF,
+INT16_UNSIGNED = 0x8000,
+INT32_UNSIGNED = 0x80000000,
+RADIX_DIVISOR_INDEX = [null, null,
+                       [0, 16384],      [-19493, 17734], [0, 16384],      [29589, 18626],  [-10240, 5535],
+                       [-25449, 30171], [0, 16384],      [-28343, 5911],  [-13824, 15258], [-9375, 3270],
+                       [0, 6561],       [4129, 12447],   [-16128, 22518], [7023, 2607],    [0, 4096],
+                       [17777, 6261],   [-17280, 9341],  [26235, 13639],  [16384, 19531],  [28189, 27482],
+                       [2624, 1730],    [-9935, 2258],   [0, 2916],       [19025, 3725],   [-20928, 4713],
+                       [-28343, 5911],  [4096, 7353],    [18585, 9076],   [-22464, 11123], [15169, 13542],
+                       [0, 16384],      [15553, 19706],  [-10176, 23571], [-19175, 28049], [-23552, 922]],
+RADIX_REM_INDEX = [null, null,
+                   30, 19, 15, 13, 11,
+                   11, 10, 9, 9, 8,
+                   8,  8,  8, 7, 7,
+                   7,  7,  7, 7, 7,
+                   6,  6,  6, 6, 6,
+                   6,  6,  6, 6, 6,
+                   6,  6,  6, 6, 5],
+ZERO_STRING = "00000000000000000000000000000";
 
 function isArrayZero( aArray ) {
   return aArray.length === 0;
@@ -135,7 +137,7 @@ function arrayBitShiftRight( srcArray, srcLen, rightShift ) {
   extraShift = (rightShift + leadingZeroes) >>> 4,
   tarLen = srcLen - intShift - extraShift,
   tarArray = new Int16Array( tarLen ),
-  carry = (srcArray[tarLen + intShift] << leftBitShift) & INT16_MASK,
+  carry = ((srcArray[tarLen + intShift] << leftBitShift) & INT16_MASK) || 0,
   srcIndex,
   tarIndex;
 
@@ -386,8 +388,8 @@ function divide( nArray, dArray ) {
 
   if ( isArrayZero( dArray ) ) { throw "Division by zero."; }
   if ( isArrayZero( nArray ) ) { return [new Int16Array( 0 ), new Int16Array( 0 )]; }
-  if ( ndComp === 0 ) { return [new Int16Array[1], new Int16Array( 0 )]; }
-  if ( ndComp === -1 ) { return [new Int16Array( 0 ), arrayCopy( nArray, 0, new Int16Array( nLen ), 0, nLen )]; }
+  if ( ndComp === 0 ) { return [new Int16Array( [1] ), new Int16Array( 0 )]; }
+  if ( ndComp === -1 ) { return [new Int16Array( 0 ), new Int16Array( nArray )]; }
 
   return arrayDivide( nArray, nLen, dArray, dLen );
 }
@@ -430,7 +432,7 @@ function arrayGCD( aArray, bArray ) {
     aLen = aArray.length,
     bLen = bArray.length;
 
-    if (Math.abs( aLen - bLen ) > 2) {
+    if (Math.abs( aLen - bLen ) > 1) {
       return gcd( bArray, arrayDivide( aArray, aLen, bArray, bLen ));
     } else {
       return arrayBinaryGCD( aArray, aLen, bArray, bLen );
@@ -458,7 +460,7 @@ function arrayToString( aSigNum, aArray, radix ) {
   function toString( aArray, aString ) {
     var
     quotRem = arrayDivide( aArray, a.length, dArray, 2 ),
-    strVal = arrayToInt32( quotRem[1] ).toString;
+    strVal = arrayToInt32( quotRem[1] ).toString(radix);
 
     if ( !isArrayZero( quotRem[0] )) {
       aString = strVal + aString;
@@ -475,4 +477,24 @@ function arrayToString( aSigNum, aArray, radix ) {
   }
 
   return toString( aArray, aString );
+}
+
+function arrayToNumber( aSigNum, aArray ) {
+  var
+  aLen = aArray.length,
+  dLen,
+  dArray,
+  quotRem;
+
+  if ( aLen == 3 ) {
+    return parseInt( arrayToString( aSigNum, aArray, 10 ) );
+  }
+
+  dLen = aLen - 2;
+  dArray = new Int16Array( dLen );
+  dArray[dLen - 1] = INT16_UNSIGNED;
+
+  quotRem = arrayDivide( aArray, aLen, dArray, dLen );
+
+  return parseInt( arrayToString( aSigNum, aArray, 10 ) );
 }
