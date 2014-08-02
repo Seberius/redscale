@@ -1,17 +1,17 @@
-(defproject scale "0.1.0-SNAPSHOT"
-  :description "FIXME: write this!"
+(defproject redscale "0.1.0"
+  :description "Red Scale: A BigInteger, BigDecimal and Ratio library for ClojureScript."
   :url "http://example.com/FIXME"
 
-  :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-2173"]]
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [org.clojure/clojurescript "0.0-2280"]]
 
-  :plugins [[lein-cljsbuild "1.0.2"]]
+  :plugins [[lein-cljsbuild "1.0.3"]]
 
   :source-paths ["src"]
 
   :cljsbuild { 
     :builds [{:id "redscale"
-              :source-paths ["src"]
+              :source-paths ["src/cljs"]
               :compiler {
                 :output-to "redscale.js"
                 :output-dir "out"
