@@ -1,8 +1,29 @@
 var INT16_MASK = 0xFFFF;
 var INT32_UNSIGNED = 0x80000000;
+var RADIX_DIVISOR_INDEX = [null, null,
+                           [0, 16384], [-19493, 17734], [0, 16384], [29589, 18626], [-10240, 5535],
+                           [-25449, 30171], [0, 16384], [-28343, 5911], [-13824, 15258], [-9375, 3270],
+                           [0, 6561], [4129, 12447], [-16128, 22518], [7023, 2607], [0, 4096],
+                           [17777, 6261], [-17280, 9341], [26235, 13639], [16384, 19531], [28189, 27482],
+                           [2624, 1730], [-9935, 2258], [0, 2916], [19025, 3725], [-20928, 4713],
+                           [-28343, 5911], [4096, 7353], [18585, 9076], [-22464, 11123], [15169, 13542],
+                           [0, 16384], [15553, 19706], [-10176, 23571], [-19175, 28049], [-23552, 922]];
+var RADIX_REM_INDEX = [null, null,
+                       30, 19, 15, 13, 11,
+                       11, 10, 9, 9, 8,
+                       8, 8, 8, 7, 7,
+                       7, 7, 7, 7, 7,
+                       6, 6, 6, 6, 6,
+                       6, 6, 6, 6, 6,
+                       6, 6, 6, 6, 5];
+var ZERO_STRING = "00000000000000000000000000000";
 
 function isArrayZero( aArray ) {
   return aArray.length === 0;
+}
+
+function isArrayOdd( aArray ) {
+  return ((aArray[0] || 0) & 1) === 1;
 }
 
 function numberLeadingZeroes( int ) {
@@ -130,7 +151,28 @@ function arrayBitShiftRight( srcArray, srcLen, rightShift ) {
   return tarArray;
 }
 
-function addArray( aArray, aLen, bArray, bLen ) {
+function arrayCompare ( aArray, aLen, bArray, bLen ) {
+  var
+  aIndex;
+
+  if ( aLen > bLen ) { return 1; }
+  if ( aLen < bLen ) { return -1; }
+
+  for ( aIndex = aLen - 1; aIndex >= 0; aIndex-- ) {
+    var
+    aVal = aArray[aIndex],
+    bVal = bArray[aIndex];
+
+    if ( aVal != bVal ) {
+      if ( aVal > bVal ) { return 1; } else { return -1; }
+    }
+  }
+
+  return 0;
+}
+
+// Addition
+function arrayAdd( aArray, aLen, bArray, bLen ) {
   var
   sLen = Math.max( aLen, bLen ) + 1,
   sArray = new Int16Array( sLen ),
@@ -147,10 +189,11 @@ function addArray( aArray, aLen, bArray, bLen ) {
     carry = sum >>> 16;
   }
 
-  return sArray;
+  return trimLeadingZeroes( sArray, sLen );
 }
 
-function subtractArray( aArray, aLen, bArray, bLen ) {
+// Subtraction
+function arraySubtract( aArray, aLen, bArray, bLen ) {
   var
   dArray = new Int16Array( aLen ),
   carry = 0,
@@ -171,12 +214,14 @@ function subtractArray( aArray, aLen, bArray, bLen ) {
     carry = diff >> 16;
   }
 
-  return dArray;
+  return trimLeadingZeroes( dArray, aLen );
 }
 
-function multiplyArray( aArray, aLen, bArray, bLen ) {
+// Multiplication
+function arrayMultiply( aArray, aLen, bArray, bLen ) {
   var
-  pArray = new Int16Array( aLen + bLen ),
+  pLen = aLen + bLen,
+  pArray = new Int16Array( pLen ),
   aIndex;
 
   for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
@@ -196,7 +241,7 @@ function multiplyArray( aArray, aLen, bArray, bLen ) {
     pArray[aIndex + bLen] = carry;
   }
 
-  return pArray;
+  return trimLeadingZeroes( pArray, pLen );
 }
 
 // Knuth Division
@@ -284,7 +329,7 @@ function divAdd( aArray, bArray, qIndex, bLen ) {
   return carry;
 }
 
-function divideArray( nArray, nLen, dArray, dLen ) {
+function arrayDivide( nArray, nLen, dArray, dLen ) {
   var
   qLen = nLen - dLen + 1,
   aLen = nLen + 1,
@@ -332,7 +377,102 @@ function divideArray( nArray, nLen, dArray, dLen ) {
   return [trimLeadingZeroes( qArray, qLen ), arrayBitShiftRight( aArray, aLen, shiftNum )];
 }
 
-// GCD
-function arrayBinaryGCD( aArray, bArray ) {}
+//Divide
+function divide( nArray, dArray ) {
+  var
+  nLen = nArray.length,
+  dLen = dArray.length,
+  ndComp = arrayCompare( nArray, nLen, dArray, dLen );
 
-function arrayGCD( aArray, bArray )
+  if ( isArrayZero( dArray ) ) { throw "Division by zero."; }
+  if ( isArrayZero( nArray ) ) { return [new Int16Array( 0 ), new Int16Array( 0 )]; }
+  if ( ndComp === 0 ) { return [new Int16Array[1], new Int16Array( 0 )]; }
+  if ( ndComp === -1 ) { return [new Int16Array( 0 ), arrayCopy( nArray, 0, new Int16Array( nLen ), 0, nLen )]; }
+
+  return arrayDivide( nArray, nLen, dArray, dLen );
+}
+
+// GCD
+function arrayBinaryGCD( aArray, aLen, bArray, bLen ) {
+  var
+  aZero = arrayNumberTrailingZeroes( aArray, aLen ),
+  bZero = arrayNumberTrailingZeroes( bArray, bLen ),
+  shiftNum = Math.max( aZero, bZero ),
+  aArray = arrayBitShiftRight( aArray, aLen, aZero ),
+  bArray = arrayBitShiftRight( bArray, bLen, bZero );
+
+  function binaryGCD ( aArray, bArray ) {
+    var
+    aLen = aArray.length,
+    bLen = bArray.length
+    abComp;
+
+    if ( !isArrayOdd( aArray ) ) {
+      return binaryGCD( aArray, arrayBitShiftRight( bArray, arrayNumberTrailingZeroes( aArray, aLen )));
+    }
+
+    abComp = arrayCompare( aArray, aLen, bArray, bLen );
+
+    if ( abComp === 0 ) { return aArray; }
+    if ( abComp === 1 ) {
+      return binaryGCD( bArray, arraySubtract( aArray, aLen, bArray, bLen ));
+    } else {
+      return binaryGCD( aArray, arraySubtract( bArray, bLen, aArray, aLen ));
+    }
+  }
+
+  return binaryGCD( aArray, bArray );
+}
+
+function arrayGCD( aArray, bArray ) {
+  function gcd( aArray, bArray ) {
+    var
+    aLen = aArray.length,
+    bLen = bArray.length;
+
+    if (Math.abs( aLen - bLen ) > 2) {
+      return gcd( bArray, arrayDivide( aArray, aLen, bArray, bLen ));
+    } else {
+      return arrayBinaryGCD( aArray, aLen, bArray, bLen );
+    }
+  }
+
+  return gcd( aArray, bArray );
+}
+
+//toString
+function arrayToInt32( aArray ) {
+  var
+  aHigh = aArray[1] || 0,
+  aLow = aArray[0] || 0;
+
+  return ((aHigh & INT16_MASK) << 16) | (aLow & INT16_MASK);
+}
+
+function arrayToString( aSigNum, aArray, radix ) {
+  var
+  dArray = RADIX_DIVISOR_INDEX[radix],
+  remNum = RADIX_REM_INDEX[radix],
+  aString = "";
+
+  function toString( aArray, aString ) {
+    var
+    quotRem = arrayDivide( aArray, a.length, dArray, 2 ),
+    strVal = arrayToInt32( quotRem[1] ).toString;
+
+    if ( !isArrayZero( quotRem[0] )) {
+      aString = strVal + aString;
+      aString = ZERO_STRING.slice(0, (RADIX_REM_INDEX - strVal.length)) + aString;
+
+      return toString( quotRem[0], aString );
+    } else {
+      aString = strVal + aString;
+
+      if ( aSigNum < 0 ) { aString = "-" + aString; }
+
+      return aString;
+    }
+  }
+
+  return toString( aArray, aString );
+}
