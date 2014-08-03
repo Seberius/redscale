@@ -4,32 +4,37 @@ redscale.magnitude.INT16_MASK = 0xFFFF;
 redscale.magnitude.INT16_UNSIGNED = 0x8000;
 redscale.magnitude.INT32_UNSIGNED = 0x80000000;
 redscale.magnitude.RADIX_DIVISOR_INDEX = [null, null,
-                       [0, 16384],      [-19493, 17734], [0, 16384],      [29589, 18626],  [-10240, 5535],
-                       [-25449, 30171], [0, 16384],      [-28343, 5911],  [-13824, 15258], [-9375, 3270],
-                       [0, 6561],       [4129, 12447],   [-16128, 22518], [7023, 2607],    [0, 4096],
-                       [17777, 6261],   [-17280, 9341],  [26235, 13639],  [16384, 19531],  [28189, 27482],
-                       [2624, 1730],    [-9935, 2258],   [0, 2916],       [19025, 3725],   [-20928, 4713],
-                       [-28343, 5911],  [4096, 7353],    [18585, 9076],   [-22464, 11123], [15169, 13542],
-                       [0, 16384],      [15553, 19706],  [-10176, 23571], [-19175, 28049], [-23552, 922]];
+                                          [0, 16384],      [-19493, 17734], [0, 16384],
+                                          [29589, 18626],  [-10240, 5535],  [-25449, 30171],
+                                          [0, 16384],      [-28343, 5911],  [-13824, 15258],
+                                          [-9375, 3270],   [0, 6561],       [4129, 12447],
+                                          [-16128, 22518], [7023, 2607],    [0, 4096],
+                                          [17777, 6261],   [-17280, 9341],  [26235, 13639],
+                                          [16384, 19531],  [28189, 27482],  [2624, 1730],
+                                          [-9935, 2258],   [0, 2916],       [19025, 3725],
+                                          [-20928, 4713],  [-28343, 5911],  [4096, 7353],
+                                          [18585, 9076],   [-22464, 11123], [15169, 13542],
+                                          [0, 16384],      [15553, 19706],  [-10176, 23571],
+                                          [-19175, 28049], [-23552, 922]];
 redscale.magnitude.RADIX_REM_INDEX = [null, null,
-                   30, 19, 15, 13, 11,
-                   11, 10, 9, 9, 8,
-                   8,  8,  8, 7, 7,
-                   7,  7,  7, 7, 7,
-                   6,  6,  6, 6, 6,
-                   6,  6,  6, 6, 6,
-                   6,  6,  6, 6, 5];
+                                      30, 19, 15, 13, 11,
+                                      11, 10, 9, 9, 8,
+                                      8,  8,  8, 7, 7,
+                                      7,  7,  7, 7, 7,
+                                      6,  6,  6, 6, 6,
+                                      6,  6,  6, 6, 6,
+                                      6,  6,  6, 6, 5];
 redscale.magnitude.ZERO_STRING = '00000000000000000000000000000';
 
-redscale.magnitude.isZero function( aArray ) {
+redscale.magnitude.isZero = function( aArray ) {
   return aArray.length === 0;
 };
 
-redscale.magnitude.isOdd function( aArray ) {
+redscale.magnitude.isOdd = function( aArray ) {
   return ((aArray[0] || 0) & 1) === 1;
 };
 
-redscale.magnitude.copy function( srcArray, srcStart, tarArray, tarStart, copyLength ) {
+redscale.magnitude.copy = function( srcArray, srcStart, tarArray, tarStart, copyLength ) {
   var
   srcIndex = srcStart,
   tarIndex = tarStart,
@@ -42,7 +47,7 @@ redscale.magnitude.copy function( srcArray, srcStart, tarArray, tarStart, copyLe
   return tarArray;
 };
 
-redscale.magnitude.intLeadingZeroes function( int ) {
+redscale.magnitude.intLeadingZeroes = function( int ) {
   var
   zeroCount = 0;
 
@@ -67,11 +72,11 @@ redscale.magnitude.intLeadingZeroes function( int ) {
   return zeroCount;
 };
 
-redscale.magnitude.intTrailingZeroes function( int ) {
+redscale.magnitude.intTrailingZeroes = function( int ) {
   return 16 - this.intLeadingZeroes( (~ int) & (int - 1) );
 }
 
-redscale.magnitude.numberLeadingZeroes function( aArray, aLen ) {
+redscale.magnitude.numberLeadingZeroes = function( aArray, aLen ) {
   var
   aIndex;
 
@@ -80,7 +85,7 @@ redscale.magnitude.numberLeadingZeroes function( aArray, aLen ) {
   return ((aLen - 1 - aIndex) << 4) + this.intLeadingZeroes( aArray[aIndex] );
 }
 
-redscale.magnitude.numberTrailingZeroes function( aArray, aLen ) {
+redscale.magnitude.numberTrailingZeroes = function( aArray, aLen ) {
   var
   aIndex;
 
@@ -89,7 +94,7 @@ redscale.magnitude.numberTrailingZeroes function( aArray, aLen ) {
   return (aIndex << 4) + this.intTrailingZeroes( aArray[aIndex] );
 };
 
-redscale.magnitude.trimLeadingZeroes function( srcArray, srcLen ) {
+redscale.magnitude.trimLeadingZeroes = function( srcArray, srcLen ) {
   var
   tarArray,
   srcIndex;
@@ -104,7 +109,7 @@ redscale.magnitude.trimLeadingZeroes function( srcArray, srcLen ) {
   return tarArray;
 };
 
-redscale.magnitude.bitShiftLeft function( srcArray, srcLen, leftShift, leadingZeroes ) {
+redscale.magnitude.bitShiftLeft = function( srcArray, srcLen, leftShift, leadingZeroes ) {
   var
   intShift = leftShift >>> 4,
   leftBitShift = leftShift & 0xF,
@@ -129,7 +134,7 @@ redscale.magnitude.bitShiftLeft function( srcArray, srcLen, leftShift, leadingZe
   return tarArray;
 };
 
-redscale.magnitude.bitShiftRight function( srcArray, srcLen, rightShift ) {
+redscale.magnitude.bitShiftRight = function( srcArray, srcLen, rightShift ) {
   var
   intShift = rightShift >>> 4,
   rightBitShift = rightShift & 0xF,
@@ -154,7 +159,7 @@ redscale.magnitude.bitShiftRight function( srcArray, srcLen, rightShift ) {
   return tarArray;
 };
 
-redscale.magnitude.compare function( aArray, aLen, bArray, bLen ) {
+redscale.magnitude.compare = function( aArray, aLen, bArray, bLen ) {
   var
   aIndex;
 
@@ -175,7 +180,7 @@ redscale.magnitude.compare function( aArray, aLen, bArray, bLen ) {
 };
 
 // Addition
-redscale.magnitude.add function( aArray, aLen, bArray, bLen ) {
+redscale.magnitude.add = function( aArray, aLen, bArray, bLen ) {
   var
   sLen = Math.max( aLen, bLen ) + 1,
   sArray = new Int16Array( sLen ),
@@ -196,7 +201,7 @@ redscale.magnitude.add function( aArray, aLen, bArray, bLen ) {
 };
 
 // Subtraction
-redscale.magnitude.subtract function( aArray, aLen, bArray, bLen ) {
+redscale.magnitude.subtract = function( aArray, aLen, bArray, bLen ) {
   var
   dArray = new Int16Array( aLen ),
   carry = 0,
@@ -221,7 +226,7 @@ redscale.magnitude.subtract function( aArray, aLen, bArray, bLen ) {
 };
 
 // Multiplication
-redscale.magnitude.multiply function( aArray, aLen, bArray, bLen ) {
+redscale.magnitude.multiply = function( aArray, aLen, bArray, bLen ) {
   var
   pLen = aLen + bLen,
   pArray = new Int16Array( pLen ),
@@ -249,8 +254,10 @@ redscale.magnitude.multiply function( aArray, aLen, bArray, bLen ) {
 };
 
 // Knuth Division
-redscale.magnitude.divideKnuth function( nArray, nLen, dArray, dLen ) {
+redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
   var
+  INT16_MASK = this.INT16_MASK,
+  INT32_UNSIGNED = this.INT32_UNSIGNED,
   qLen = nLen - dLen + 1,
   aLen = nLen + 1,
   shiftNum = this.intLeadingZeroes( dArray[dLen - 1] ),
@@ -258,54 +265,51 @@ redscale.magnitude.divideKnuth function( nArray, nLen, dArray, dLen ) {
   bArray = this.bitShiftLeft( dArray, dLen, shiftNum, 0 ),
   qArray = new Int16Array( qLen ),
   bHigh = bArray[dLen - 1],
-  bHighInt32 = bHigh & this.INT16_MASK,
+  bHighInt32 = bHigh & INT16_MASK,
   bLow = bArray[dLen - 2],
   qIndex,
   aIndex;
 
   function divInt32ByInt16( aInt32, bInt16 ) {
     var
-    bInt32 = bInt16 & this.INT16_MASK,
+    bInt32 = bInt16 & INT16_MASK,
     quot,
     rem;
 
     if ( bInt16 == 1 ) {
-      quot = aInt32 & this.INT16_MASK;
+      quot = aInt32 & INT16_MASK;
       rem = 0;
     } else if ( bInt16 == 2 ) {
-      quot = (aInt32 >>> 1) & this.INT16_MASK;
+      quot = (aInt32 >>> 1) & INT16_MASK;
       rem = aInt32 & 1;
     } else if ( aInt32 >= 0 ) {
       quot = (aInt32 / bInt32) | 0;
       rem = aInt32 % bInt32;
     } else {
-      quot = ((aInt32 >>> 1) / (bInt32 >>> 1)) | 0;
-      rem = aInt32 - (bInt32 * quot);
-
-      for ( ; rem < 0; rem += bInt32 ) { quot-- }
-      for ( ; rem >= bInt32; rem -= bInt32 ) { quot++ }
+      quot = ((aInt32 >>> 1) * 2 / bInt32) | 0;
+      rem = ((aInt32 >>> 1) * 2 % bInt32) | 0;
     }
 
-    return (rem << 16) | (quot & this.INT16_MASK);
+    return (rem << 16) | (quot & INT16_MASK);
   };
 
   function divCorrection( quot, rem, aLow, bLow, bHighInt32 ) {
     var
-    testProd = quot * (bLow & this.INT16_MASK),
-    testRem = (rem << 16) | (aLow & this.INT16_MASK);
+    testProd = (quot & INT16_MASK) * (bLow & INT16_MASK),
+    testRem = (rem << 16) | (aLow & INT16_MASK);
 
-    if ( (testProd ^ this.INT32_MASK) > (testRem ^ this.INT32_MASK) ) {
+    if ( (testProd ^ INT32_UNSIGNED) > (testRem ^ INT32_UNSIGNED) ) {
       quot--;
       rem += bHighInt32;
 
-      testProd -= (bLow & this.INT16_MASK);
+      testProd -= (bLow & INT16_MASK);
       testRem = (rem << 16) | (aLow & this.INT16_MASK);
-      if ( ((rem >>> 16) == 0) && ((testProd ^ this.INT32_MASK) > (testRem ^ this.INT32_MASK)) ) {
+      if ( ((rem >>> 16) == 0) && ((testProd ^ INT32_UNSIGNED) > (testRem ^ INT32_UNSIGNED)) ) {
         quot--;
       }
     }
 
-    return (rem << 16) | (quot & this.INT16_MASK);
+    return (rem << 16) | (quot & INT16_MASK);
   };
 
   function divMulSub( quot, aArray, bArray, qIndex, bLen ) {
@@ -316,14 +320,14 @@ redscale.magnitude.divideKnuth function( nArray, nLen, dArray, dLen ) {
 
     for ( aIndex = qIndex, bIndex = 0; bIndex < bLen; aIndex++, bIndex++ ) {
       var
-      prod = (bArray[bIndex] & this.INT16_MASK) * (quot & this.INT16_MASK),
-      diff = (aArray[aIndex] & this.INT16_MASK) - (prod & this.INT16_MASK) - (carry & this.INT16_MASK);
+      prod = (bArray[bIndex] & INT16_MASK) * (quot & INT16_MASK),
+      diff = (aArray[aIndex] & INT16_MASK) - (prod & INT16_MASK) - (carry & INT16_MASK);
 
-      aArray[aIndex] = diff & this.INT16_MASK;
-      carry = ((prod >> 16) & this.INT16_MASK) - ((diff >> 16) & this.INT16_MASK);
+      aArray[aIndex] = diff & INT16_MASK;
+      carry = ((prod >> 16) & INT16_MASK) - ((diff >> 16) & INT16_MASK);
     }
 
-    aArray[aIndex] = (aArray[aIndex] & this.INT16_MASK) - (carry & this.INT16_MASK);
+    aArray[aIndex] = (aArray[aIndex] & INT16_MASK) - (carry & INT16_MASK);
 
     return carry;
   };
@@ -336,9 +340,9 @@ redscale.magnitude.divideKnuth function( nArray, nLen, dArray, dLen ) {
 
     for ( aIndex = qIndex, bIndex = 0; bIndex < bLen; aIndex++, bIndex++ ) {
       var
-      sum = (aArray[aIndex] & this.INT16_MASK) + (bArray[bIndex] & this.INT16_MASK) + carry;
+      sum = (aArray[aIndex] & INT16_MASK) + (bArray[bIndex] & INT16_MASK) + carry;
 
-      aArray[aIndex] = sum & this.INT16_MASK;
+      aArray[aIndex] = sum & INT16_MASK;
       carry = sum >> 16;
     }
 
@@ -351,7 +355,7 @@ redscale.magnitude.divideKnuth function( nArray, nLen, dArray, dLen ) {
     var
     aHigh = aArray[aIndex],
     aMed = aArray[aIndex - 1],
-    aInt32 = ((aHigh & this.INT16_MASK) << 16) | (aMed & this.INT16_MASK),
+    aInt32 = ((aHigh & INT16_MASK) << 16) | (aMed & INT16_MASK),
     candidateQuotRem = 0,
     quot,
     rem;
@@ -361,16 +365,16 @@ redscale.magnitude.divideKnuth function( nArray, nLen, dArray, dLen ) {
       rem = aHigh + aMed;
     } else {
       candidateQuotRem = divInt32ByInt16( aInt32, bHigh );
-      quot = candidateQuotRem & this.INT16_MASK;
+      quot = candidateQuotRem & INT16_MASK;
       rem = candidateQuotRem >>> 16;
     }
 
     if ( quot != 0 ) {
-      quot = divCorrection( quot, rem, aArray[aIndex - 2], bLow, bHighInt32 ) & this.INT16_MASK;
-      rem = divMulSub( quot, aArray, bArray, qIndex, dLen );
+      quot = this.divCorrection( quot, rem, aArray[aIndex - 2], bLow, bHighInt32 ) & INT16_MASK;
+      rem = this.divMulSub( quot, aArray, bArray, qIndex, dLen );
 
-      if ( rem < 0 ) {
-        divAdd( aArray, bArray, qIndex, dLen );
+      if ( (rem ^ this.INT16_UNSIGNED) > (aHigh ^ this.INT16_UNSIGNED) ) {
+        this.divAdd( aArray, bArray, qIndex, dLen );
         quot--;
       }
     }
@@ -382,7 +386,7 @@ redscale.magnitude.divideKnuth function( nArray, nLen, dArray, dLen ) {
 };
 
 //Divide
-redscale.magnitude.divide function( nArray, dArray ) {
+redscale.magnitude.divide = function( nArray, dArray ) {
   var
   nLen = nArray.length,
   dLen = dArray.length,
@@ -397,7 +401,7 @@ redscale.magnitude.divide function( nArray, dArray ) {
 };
 
 // GCD
-redscale.magnitude.binaryGCD function( aArray, aLen, bArray, bLen ) {
+redscale.magnitude.binaryGCD = function( aArray, aLen, bArray, bLen ) {
   var
   aZero = this.numberTrailingZeroes( aArray, aLen ),
   bZero = this.numberTrailingZeroes( bArray, bLen ),
@@ -428,7 +432,7 @@ redscale.magnitude.binaryGCD function( aArray, aLen, bArray, bLen ) {
   return internalBinaryGCD( aArray, bArray );
 };
 
-redscale.magnitude.gcd function( aArray, bArray ) {
+redscale.magnitude.gcd = function( aArray, bArray ) {
   var
   aLen = aArray.length,
   bLen = bArray.length;
@@ -441,7 +445,7 @@ redscale.magnitude.gcd function( aArray, bArray ) {
 };
 
 //toString
-redscale.magnitude.toInt32 function( aArray ) {
+redscale.magnitude.toInt32 = function( aArray ) {
   var
   aHigh = aArray[1] || 0,
   aLow = aArray[0] || 0;
@@ -449,13 +453,13 @@ redscale.magnitude.toInt32 function( aArray ) {
   return ((aHigh & this.INT16_MASK) << 16) | (aLow & this.INT16_MASK);
 };
 
-redscale.magnitude.toString function( aSigNum, aArray, radix ) {
+redscale.magnitude.toString = function( aSigNum, aArray, radix ) {
   var
   dArray = this.RADIX_DIVISOR_INDEX[radix],
   remNum = this.RADIX_REM_INDEX[radix],
   aString = "";
 
-  function toString( aArray, aString ) {
+  function internalToString( aArray, aString ) {
     var
     quotRem = this.divide( aArray, a.length, dArray, 2 ),
     strVal = this.toInt32( quotRem[1] ).toString(radix);
@@ -463,7 +467,7 @@ redscale.magnitude.toString function( aSigNum, aArray, radix ) {
     if ( !this.isZero( quotRem[0] )) {
       aString = this.ZERO_STRING.slice(0, (remNum - strVal.length)) + strVal + aString;
 
-      return toString( quotRem[0], aString );
+      return internalToString( quotRem[0], aString );
     } else {
       aString = strVal + aString;
 
@@ -473,10 +477,10 @@ redscale.magnitude.toString function( aSigNum, aArray, radix ) {
     }
   }
 
-  return toString( aArray, aString );
+  return internalToString( aArray, aString );
 };
 
-redscale.magnitude.toNumber function( aSigNum, aArray ) {
+redscale.magnitude.toNumber = function( aSigNum, aArray ) {
   var
   aLen = aArray.length,
   aVal = aArray[aLen - 1] & this.INT16_MASK,
