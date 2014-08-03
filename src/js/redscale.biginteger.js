@@ -386,7 +386,7 @@ function divide( nArray, dArray ) {
   dLen = dArray.length,
   ndComp = arrayCompare( nArray, nLen, dArray, dLen );
 
-  if ( isArrayZero( dArray ) ) { throw "Division by zero."; }
+  if ( isArrayZero( dArray ) ) { throw new Error( "Division by zero."; ) }
   if ( isArrayZero( nArray ) ) { return [new Int16Array( 0 ), new Int16Array( 0 )]; }
   if ( ndComp === 0 ) { return [new Int16Array( [1] ), new Int16Array( 0 )]; }
   if ( ndComp === -1 ) { return [new Int16Array( 0 ), new Int16Array( nArray )]; }
@@ -463,8 +463,7 @@ function arrayToString( aSigNum, aArray, radix ) {
     strVal = arrayToInt32( quotRem[1] ).toString(radix);
 
     if ( !isArrayZero( quotRem[0] )) {
-      aString = strVal + aString;
-      aString = ZERO_STRING.slice(0, (RADIX_REM_INDEX - strVal.length)) + aString;
+      aString = ZERO_STRING.slice(0, (RADIX_REM_INDEX - strVal.length)) + strVal + aString;
 
       return toString( quotRem[0], aString );
     } else {
@@ -482,19 +481,17 @@ function arrayToString( aSigNum, aArray, radix ) {
 function arrayToNumber( aSigNum, aArray ) {
   var
   aLen = aArray.length,
-  dLen,
-  dArray,
-  quotRem;
+  aVal = aArray[aLen - 1] & INT16_MASK,
+  aIndex;
 
-  if ( aLen == 3 ) {
-    return parseInt( arrayToString( aSigNum, aArray, 10 ) );
+  if ( aLen > 64 ) { return Infinity * aSigNum; }
+
+  for ( aIndex = aLen - 2; aIndex >= 0; aIndex-- ) {
+    aVal *= 65536;
+    aVal += aArray[aIndex] & INT16_MASK;
   }
 
-  dLen = aLen - 2;
-  dArray = new Int16Array( dLen );
-  dArray[dLen - 1] = INT16_UNSIGNED;
+  aVal *= aSigNum;
 
-  quotRem = arrayDivide( aArray, aLen, dArray, dLen );
-
-  return parseInt( arrayToString( aSigNum, aArray, 10 ) );
+  return aVal;
 }
