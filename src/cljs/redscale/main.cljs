@@ -1,31 +1,19 @@
-(ns redscale.big-integer)
+(ns redscale.main)
 
-(deftype BigInteger [sign magnitude]
+(defprotocol IPrecisionMath
+  (add [this b])
+  (subtract [this b])
+  (multiply [this b])
+  (divide [this b])
+  (gcd [this b]))
+
+(deftype BigInteger [sign magnitude maglen]
   Object
-  (add [_ y]
-    (let [xs (sign)
-          ys (.sign y)
-          xm (magnitude)
-          ym (.magnitude y)
-          cm (compare-magnitude xm xs ym ys)
-          [zs zm] (add xm xs ym ys cm)]
-      (BigNumber. zs zm)))
-  (subtract [_ y]
-    (let [xs (sign)
-          ys (.sign y)
-          xm (magnitude)
-          ym (.magnitude y)
-          cm (compare-magnitude xm xs ym ys)
-          [zs zm] (subtract xm xs ym ys cm)]
-      (BigNumber. zs zm)))
-  (multiply [_ y]
-    (let [xs (.sign this)
-          ys (.sign y)
-          xm (.magnitude this)
-          ym (.magnitude y)
-          zs (* xs ys)
-          zm (multiply xm xs ym ys)]
-      (BigNumber. zs zm)))
-  (divide [_ y]
-    (let [zm (divide-f xm xs ym ys)]
-      (BigInteger. zs zm))))
+  (to-string [this radix] (redscale.magnitude/arrayToString sign magnitude radix))
+  (of-value [this] this)
+  (to-number [this] (redscale.magnitude/arrayToNumber sign magnitude))
+  IPrecisionMath
+  (add [this b] )
+  (subtract [this b] )
+  (multiply [this b] )
+  (divide [this b] ))
