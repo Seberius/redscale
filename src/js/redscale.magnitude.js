@@ -272,22 +272,20 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
 
   function divInt32ByInt16( aInt32, bInt16 ) {
     var
+    aInt32 = ((aInt32 >>> 1) * 2) + (aInt32 & 1),
     bInt32 = bInt16 & INT16_MASK,
     quot,
     rem;
 
     if ( bInt16 == 1 ) {
-      quot = aInt32 & INT16_MASK;
+      quot = aInt32;
       rem = 0;
     } else if ( bInt16 == 2 ) {
-      quot = (aInt32 >>> 1) & INT16_MASK;
+      quot = aInt32 >>> 1;
       rem = aInt32 & 1;
-    } else if ( aInt32 >= 0 ) {
+    } else {
       quot = (aInt32 / bInt32) | 0;
       rem = aInt32 % bInt32;
-    } else {
-      quot = ((aInt32 >>> 1) * 2 / bInt32) | 0;
-      rem = ((aInt32 >>> 1) * 2 % bInt32) | 0;
     }
 
     return (rem << 16) | (quot & INT16_MASK);
@@ -309,7 +307,7 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
       }
     }
 
-    return (rem << 16) | (quot & INT16_MASK);
+    return quot & INT16_MASK;
   };
 
   function divMulSub( quot, aArray, bArray, qIndex, bLen ) {
@@ -370,11 +368,11 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
     }
 
     if ( quot != 0 ) {
-      quot = this.divCorrection( quot, rem, aArray[aIndex - 2], bLow, bHighInt32 ) & INT16_MASK;
-      rem = this.divMulSub( quot, aArray, bArray, qIndex, dLen );
+      quot = divCorrection( quot, rem, aArray[aIndex - 2], bLow, bHighInt32 );
+      divMulSub( quot, aArray, bArray, qIndex, dLen );
 
-      if ( (rem ^ this.INT16_UNSIGNED) > (aHigh ^ this.INT16_UNSIGNED) ) {
-        this.divAdd( aArray, bArray, qIndex, dLen );
+      if ( aArray[qIndex + dLen] != 0 ) {
+        divAdd( aArray, bArray, qIndex, dLen );
         quot--;
       }
     }
