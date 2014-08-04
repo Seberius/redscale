@@ -23,7 +23,7 @@ redscale.magnitude.RADIX_DIVISOR16_INDEX = [null, null,
                                             4913,  5832,  6859,  8000,  9261,
                                             10648, 12167, 13824, 15625, 17576,
                                             19683, 21952, 24389, 27000, 29791,
-                                            1024,  1089,  1156,  1225,  1296]
+                                            1024,  1089,  1156,  1225,  1296];
 redscale.magnitude.RADIX_INT32_INDEX = [null, null,
                                         30, 19, 15, 13, 11,
                                         11, 10, 9, 9, 8,
@@ -47,7 +47,7 @@ redscale.magnitude.RADIX_BIT_INDEX = [null, null,
                                       4.088, 4.17,  4.248, 4.322, 4.393,
                                       4.46,  4.524, 4.585, 4.644, 4.701,
                                       4.755, 4.808, 4.858, 4.907, 4.955,
-                                      5,     5.045, 5.088, 5.13,  5.17]
+                                      5,     5.045, 5.088, 5.13,  5.17];
 redscale.magnitude.ZERO_STRING = '00000000000000000000000000000';
 
 redscale.magnitude.isZero = function( aArray ) {
@@ -192,8 +192,8 @@ redscale.magnitude.compare = function( aArray, aLen, bArray, bLen ) {
 
   for ( aIndex = aLen - 1; aIndex >= 0; aIndex-- ) {
     var
-    aVal = aArray[aIndex],
-    bVal = bArray[aIndex];
+    aVal = (aArray[aIndex] & this.INT16_MASK),
+    bVal = (bArray[aIndex] & this.INT16_MASK);
 
     if ( aVal != bVal ) {
       if ( aVal > bVal ) { return 1; } else { return -1; }
@@ -289,53 +289,10 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
   bArray = this.bitShiftLeft( dArray, dLen, shiftNum, 0 ),
   qArray = new Int16Array( qLen ),
   bHigh = bArray[dLen - 1],
-  bHighInt32 = bHigh & INT16_MASK,
   bLow = bArray[dLen - 2],
+  bVal = ((bHigh & INT16_MASK) * 65536) + (bLow & INT16_MASK),
   qIndex,
   aIndex;
-
-  function divInt32ByInt16( aInt32, bInt16 ) {
-    var
-    aInt32 = ((aInt32 >>> 1) * 2) + (aInt32 & 1),
-    bInt32 = bInt16 & INT16_MASK,
-    quot,
-    rem;
-
-    if ( bInt16 == 1 ) {
-      quot = aInt32;
-      rem = 0;
-    } else if ( bInt16 == 2 ) {
-      quot = aInt32 >>> 1;
-      rem = aInt32 & 1;
-    } else {
-      quot = (aInt32 / bInt32) | 0;
-      rem = aInt32 % bInt32;
-    }
-
-    return (rem << 16) | (quot & INT16_MASK);
-  };
-
-  function divCorrection( quot, rem, aLow, bLow, bHighInt32 ) {
-    var
-    testProd = (quot & INT16_MASK) * (bLow & INT16_MASK),
-    testRem = (rem << 16) | (aLow & INT16_MASK);
-
-    if ( (testProd ^ INT32_UNSIGNED) > (testRem ^ INT32_UNSIGNED) ) {
-      quot--;
-      rem += bHighInt32;
-
-      if ( ((rem >>> 16) == 0) {
-        testProd -= (bLow & INT16_MASK);
-        testRem = (rem << 16) | (aLow & this.INT16_MASK);
-
-        if ((testProd ^ INT32_UNSIGNED) > (testRem ^ INT32_UNSIGNED)) ) {
-          quot--;
-        }
-      }
-    }
-
-    return quot & INT16_MASK;
-  };
 
   function divMulSub( quot, aArray, bArray, qIndex, bLen ) {
     var
@@ -380,22 +337,13 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
     var
     aHigh = aArray[aIndex],
     aMed = aArray[aIndex - 1],
-    aInt32 = ((aHigh & INT16_MASK) << 16) | (aMed & INT16_MASK),
-    candidateQuotRem = 0,
-    quot,
-    rem;
+    aLow = aArray[aIndex - 2],
+    aVal = ((aHigh & INT16_MASK) * 4294967296) + ((aMed & INT16_MASK) * 65536) + (aLow & INT16_MASK),
+    quot;
 
-    if ( aHigh == bHigh ) {
-      quot = -1;
-      rem = aHigh + aMed;
-    } else {
-      candidateQuotRem = divInt32ByInt16( aInt32, bHigh );
-      quot = candidateQuotRem & INT16_MASK;
-      rem = candidateQuotRem >>> 16;
-    }
+    quot = (aVal / bVal) & INT16_MASK;
 
     if ( quot != 0 ) {
-      quot = divCorrection( quot, rem, aArray[aIndex - 2], bLow, bHighInt32 );
       divMulSub( quot, aArray, bArray, qIndex, dLen );
 
       if ( aArray[qIndex + dLen] != 0 ) {
@@ -480,17 +428,18 @@ redscale.magnitude.toInt32 = function( aArray ) {
 
 redscale.magnitude.toString = function( aSigNum, aArray, radix ) {
   var
+  redmag = this,
   dArray = this.RADIX_DIVISOR32_INDEX[radix],
   remNum = this.RADIX_INT32_INDEX[radix],
   aString = "";
 
   function internalToString( aArray, aString ) {
     var
-    quotRem = this.divide( aArray, a.length, dArray, 2 ),
-    strVal = this.toInt32( quotRem[1] ).toString(radix);
+    quotRem = redmag.divide( aArray, dArray ),
+    strVal = redmag.toInt32( quotRem[1] ).toString(radix);
 
-    if ( !this.isZero( quotRem[0] )) {
-      aString = this.ZERO_STRING.slice(0, (remNum - strVal.length)) + strVal + aString;
+    if ( !redmag.isZero( quotRem[0] ) ) {
+      aString = redmag.ZERO_STRING.slice( 0, (remNum - strVal.length) ) + strVal + aString;
 
       return internalToString( quotRem[0], aString );
     } else {
@@ -523,15 +472,16 @@ redscale.magnitude.toNumber = function( aSigNum, aArray ) {
   return aVal;
 };
 
-redscale.magnitude.fromString( aString, aStrLen, radix ) {
+redscale.magnitude.fromString = function( aString, aStrLen, radix ) {
   var
+  INT16_MASK = this.INT16_MASK,
   aLen = (aStrLen * this.RADIX_BIT_INDEX[radix] + 16) >>> 4,
   aArray = new Int16Array( aLen ),
   radixMul = this.RADIX_DIVISOR16_INDEX[radix],
   radixLen = this.RADIX_INT16_INDEX[radix],
   aStrIndex = 0,
-  aStrSplice = aStrLen % radixLen || radixLen,
-  INT16_MASK = this.INT16_MASK;
+  aStrSlice = (aStrLen % radixLen) || radixLen,
+  aVal;
 
   function multiplyAdd( aArray, aLen, aVal ) {
     var
@@ -553,19 +503,19 @@ redscale.magnitude.fromString( aString, aStrLen, radix ) {
       sum = (aArray[aIndex] & INT16_MASK) + carry;
 
       aArray[aIndex] = sum & INT16_MASK;
-      carry = prod >>> 16;
+      carry = sum >>> 16;
     }
 
     return aArray;
   }
 
-  aArray[0] = parseInt( aString.splice( aStrIndex, aStrSplice ), radix );
+  aVal = parseInt( aString.slice( aStrIndex, aStrSlice ), radix );
+  aArray[0] = aVal;
 
-  for ( aStrIndex += aStrSplice; aStrIndex < aStrLen; aStrIndex += radixLen ) {
-    var
-    aVal = parseInt( aString.splice( aStrIndex, aStrIndex + radixLen ), radix );
+  for ( aStrIndex += aStrSlice; aStrIndex < aStrLen; aStrIndex += radixLen ) {
+    aVal = parseInt( aString.slice( aStrIndex, aStrIndex + radixLen ), radix );
     multiplyAdd( aArray, aLen, aVal );
   }
 
-  return trimLeadingZeroes( aArray, aLen );
+  return this.trimLeadingZeroes( aArray, aLen );
 };
