@@ -3,27 +3,51 @@ goog.provide('redscale.magnitude');
 redscale.magnitude.INT16_MASK = 0xFFFF;
 redscale.magnitude.INT16_UNSIGNED = 0x8000;
 redscale.magnitude.INT32_UNSIGNED = 0x80000000;
-redscale.magnitude.RADIX_DIVISOR_INDEX = [null, null,
-                                          [0, 16384],      [-19493, 17734], [0, 16384],
-                                          [29589, 18626],  [-10240, 5535],  [-25449, 30171],
-                                          [0, 16384],      [-28343, 5911],  [-13824, 15258],
-                                          [-9375, 3270],   [0, 6561],       [4129, 12447],
-                                          [-16128, 22518], [7023, 2607],    [0, 4096],
-                                          [17777, 6261],   [-17280, 9341],  [26235, 13639],
-                                          [16384, 19531],  [28189, 27482],  [2624, 1730],
-                                          [-9935, 2258],   [0, 2916],       [19025, 3725],
-                                          [-20928, 4713],  [-28343, 5911],  [4096, 7353],
-                                          [18585, 9076],   [-22464, 11123], [15169, 13542],
-                                          [0, 16384],      [15553, 19706],  [-10176, 23571],
-                                          [-19175, 28049], [-23552, 922]];
-redscale.magnitude.RADIX_REM_INDEX = [null, null,
-                                      30, 19, 15, 13, 11,
-                                      11, 10, 9, 9, 8,
-                                      8,  8,  8, 7, 7,
-                                      7,  7,  7, 7, 7,
-                                      6,  6,  6, 6, 6,
-                                      6,  6,  6, 6, 6,
-                                      6,  6,  6, 6, 5];
+redscale.magnitude.RADIX_DIVISOR32_INDEX = [null, null,
+                                            [0, 16384],      [-19493, 17734], [0, 16384],
+                                            [29589, 18626],  [-10240, 5535],  [-25449, 30171],
+                                            [0, 16384],      [-28343, 5911],  [-13824, 15258],
+                                            [-9375, 3270],   [0, 6561],       [4129, 12447],
+                                            [-16128, 22518], [7023, 2607],    [0, 4096],
+                                            [17777, 6261],   [-17280, 9341],  [26235, 13639],
+                                            [16384, 19531],  [28189, 27482],  [2624, 1730],
+                                            [-9935, 2258],   [0, 2916],       [19025, 3725],
+                                            [-20928, 4713],  [-28343, 5911],  [4096, 7353],
+                                            [18585, 9076],   [-22464, 11123], [15169, 13542],
+                                            [0, 16384],      [15553, 19706],  [-10176, 23571],
+                                            [-19175, 28049], [-23552, 922]];
+redscale.magnitude.RADIX_DIVISOR16_INDEX = [null, null,
+                                            16384, 19683, 16384, 15625, 7776,
+                                            16807, 4096,  6561,  10000, 14641,
+                                            20736, 28561, 2744,  3375,  4096,
+                                            4913,  5832,  6859,  8000,  9261,
+                                            10648, 12167, 13824, 15625, 17576,
+                                            19683, 21952, 24389, 27000, 29791,
+                                            1024,  1089,  1156,  1225,  1296]
+redscale.magnitude.RADIX_INT32_INDEX = [null, null,
+                                        30, 19, 15, 13, 11,
+                                        11, 10, 9, 9, 8,
+                                        8,  8,  8, 7, 7,
+                                        7,  7,  7, 7, 7,
+                                        6,  6,  6, 6, 6,
+                                        6,  6,  6, 6, 6,
+                                        6,  6,  6, 6, 5];
+redscale.magnitude.RADIX_INT16_INDEX = [null, null,
+                                        14, 9,  7, 6, 5,
+                                        5,  4,  4, 4, 4,
+                                        4,  4,  3, 3, 3,
+                                        3,  3,  3, 3, 3,
+                                        3,  3,  3, 3, 3,
+                                        3,  3,  3, 3, 3,
+                                        2,  2,  2, 2, 2];
+redscale.magnitude.RADIX_BIT_INDEX = [null, null,
+                                      1,     1.585, 2,     2.322, 2.585,
+                                      2.808, 3,     3.17,  3.322, 3.46,
+                                      3.585, 3.701, 3.808, 3.907, 4,
+                                      4.088, 4.17,  4.248, 4.322, 4.393,
+                                      4.46,  4.524, 4.585, 4.644, 4.701,
+                                      4.755, 4.808, 4.858, 4.907, 4.955,
+                                      5,     5.045, 5.088, 5.13,  5.17]
 redscale.magnitude.ZERO_STRING = '00000000000000000000000000000';
 
 redscale.magnitude.isZero = function( aArray ) {
@@ -300,10 +324,13 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
       quot--;
       rem += bHighInt32;
 
-      testProd -= (bLow & INT16_MASK);
-      testRem = (rem << 16) | (aLow & this.INT16_MASK);
-      if ( ((rem >>> 16) == 0) && ((testProd ^ INT32_UNSIGNED) > (testRem ^ INT32_UNSIGNED)) ) {
-        quot--;
+      if ( ((rem >>> 16) == 0) {
+        testProd -= (bLow & INT16_MASK);
+        testRem = (rem << 16) | (aLow & this.INT16_MASK);
+
+        if ((testProd ^ INT32_UNSIGNED) > (testRem ^ INT32_UNSIGNED)) ) {
+          quot--;
+        }
       }
     }
 
@@ -453,8 +480,8 @@ redscale.magnitude.toInt32 = function( aArray ) {
 
 redscale.magnitude.toString = function( aSigNum, aArray, radix ) {
   var
-  dArray = this.RADIX_DIVISOR_INDEX[radix],
-  remNum = this.RADIX_REM_INDEX[radix],
+  dArray = this.RADIX_DIVISOR32_INDEX[radix],
+  remNum = this.RADIX_INT32_INDEX[radix],
   aString = "";
 
   function internalToString( aArray, aString ) {
@@ -494,4 +521,51 @@ redscale.magnitude.toNumber = function( aSigNum, aArray ) {
   aVal *= aSigNum;
 
   return aVal;
+};
+
+redscale.magnitude.fromString( aString, aStrLen, radix ) {
+  var
+  aLen = (aStrLen * this.RADIX_BIT_INDEX[radix] + 16) >>> 4,
+  aArray = new Int16Array( aLen ),
+  radixMul = this.RADIX_DIVISOR16_INDEX[radix],
+  radixLen = this.RADIX_INT16_INDEX[radix],
+  aStrIndex = 0,
+  aStrSplice = aStrLen % radixLen || radixLen,
+  INT16_MASK = this.INT16_MASK;
+
+  function multiplyAdd( aArray, aLen, aVal ) {
+    var
+    carry = 0,
+    aIndex;
+
+    for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
+      var
+      prod = (aArray[aIndex] & INT16_MASK) * radixMul + carry;
+
+      aArray[aIndex] = prod & INT16_MASK;
+      carry = prod >>> 16;
+    }
+
+    carry = aVal;
+
+    for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
+      var
+      sum = (aArray[aIndex] & INT16_MASK) + carry;
+
+      aArray[aIndex] = sum & INT16_MASK;
+      carry = prod >>> 16;
+    }
+
+    return aArray;
+  }
+
+  aArray[0] = parseInt( aString.splice( aStrIndex, aStrSplice ), radix );
+
+  for ( aStrIndex += aStrSplice; aStrIndex < aStrLen; aStrIndex += radixLen ) {
+    var
+    aVal = parseInt( aString.splice( aStrIndex, aStrIndex + radixLen ), radix );
+    multiplyAdd( aArray, aLen, aVal );
+  }
+
+  return trimLeadingZeroes( aArray, aLen );
 };
