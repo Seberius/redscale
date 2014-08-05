@@ -411,11 +411,11 @@ redscale.magnitude.binaryGCD = function( aArray, bArray ) {
       abComp = this.compare( aArray, aLen, bArray, bLen );
 
       if ( abComp === 1 ) {
-        temp = this.subtract( aArray, aLen, bArray, bLen );
+        temp = this.subtract( aArray, bArray );
         aArray = bArray;
         bArray = temp;
       } else {
-        bArray = this.subtract( bArray, bLen, aArray, aLen );
+        bArray = this.subtract( bArray, aArray );
       }
     }
   }
