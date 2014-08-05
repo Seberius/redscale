@@ -58,6 +58,10 @@ redscale.magnitude.isOdd = function( aArray ) {
   return ((aArray[0] || 0) & 1) === 1;
 };
 
+redscale.magnitude.isEven = function( aArray ) {
+  return ((aArray[0] || 0) & 1) === 0;
+};
+
 redscale.magnitude.copy = function( srcArray, srcStart, tarArray, tarStart, copyLength ) {
   var
   srcIndex = srcStart,
@@ -419,46 +423,48 @@ redscale.magnitude.divide = function( nArray, dArray ) {
 // GCD
 redscale.magnitude.binaryGCD = function( aArray, aLen, bArray, bLen ) {
   var
-  redmag = this,
-  aZero = this.numberTrailingZeroes( aArray, aLen ),
-  bZero = this.numberTrailingZeroes( bArray, bLen ),
-  shiftNum = Math.max( aZero, bZero ),
+  aZero = this.numberTrailingZeroes( aArray ),
+  bZero = this.numberTrailingZeroes( bArray ),
+  shiftNum = Math.min( aZero, bZero ),
   aArray = this.bitShiftRight( aArray, aZero ),
-  bArray = this.bitShiftRight( bArray, bZero );
+  bArray = this.bitShiftRight( bArray, bZero ),
+  temp;
 
-  function internalBinaryGCD( aArray, bArray ) {
+  while ( !this.isZero( bArray ) ) {
     var
     aLen = aArray.length,
     bLen = bArray.length,
     abComp;
 
-    if ( !redmag.isOdd( bArray ) ) {
-      return internalBinaryGCD( aArray, redmag.bitShiftRight( bArray, redmag.numberTrailingZeroes( aArray, aLen )));
-    }
-
-    abComp = redmag.compare( aArray, aLen, bArray, bLen );
-
-    if ( abComp === 0 ) { return aArray; }
-    if ( abComp === 1 ) {
-      return internalBinaryGCD( bArray, redmag.subtract( aArray, aLen, bArray, bLen ));
+    if ( !this.isOdd( bArray ) ) {
+      bArray = this.bitShiftRight( bArray, this.numberTrailingZeroes( bArray, bLen ) );
     } else {
-      return internalBinaryGCD( aArray, redmag.subtract( bArray, bLen, aArray, aLen ));
+      abComp = this.compare( aArray, aLen, bArray, bLen );
+
+      if ( abComp === 1 ) {
+        temp = this.subtract( aArray, aLen, bArray, bLen );
+        aArray = bArray;
+        bArray = temp;
+      } else {
+        bArray = this.subtract( bArray, bLen, aArray, aLen );
+      }
     }
   }
 
-  return this.bitShiftLeft( internalBinaryGCD( aArray, bArray ), shiftNum, 0 );
+  return this.bitShiftLeft( aArray, shiftNum, 0 );
 };
 
 redscale.magnitude.gcd = function( aArray, bArray ) {
   var
-  aLen = aArray.length,
-  bLen = bArray.length;
+  temp;
 
-  if (Math.abs( aLen - bLen ) > 1) {
-    return this.gcd( bArray, this.divide( aArray, aLen, bArray, bLen ));
-  } else {
-    return this.binaryGCD( aArray, aLen, bArray, bLen );
+  while ( Math.abs( aArray.length - bArray.length ) > 1 ) {
+    temp = this.divide( aArray, bArray );
+    aArray = bArray;
+    bArray = temp[1];
   }
+
+  return this.binaryGCD( aArray, aArray.length, bArray, bArray.length );
 };
 
 //toString
