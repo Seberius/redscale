@@ -147,22 +147,20 @@ redscale.magnitude.bitShiftLeft = function( srcArray, leftShift, extraZeroes ) {
 redscale.magnitude.bitShiftRight = function( srcArray, rightShift ) {
   var srcLen = srcArray.length,
       leadingZeroes = this.numberLeadingZeroes( srcArray, srcLen ),
-      intShift = (rightShift + leadingZeroes) >>> 4,
+      intShift = rightShift >>> 4,
       rightBitShift = rightShift & 0xF,
       leftBitShift = 16 - rightBitShift,
-      tarLen = srcLen - intShift,
+      tarLen = srcLen - intShift - (rightBitShift + leadingZeroes >>> 4),
       tarArray = new Int16Array( tarLen < 0 ? 0 : tarLen ),
-      carry = ((srcArray[tarLen + intShift - 1] << leftBitShift) & this.INT16_MASK),
+      carry = 0,
       srcIndex,
       tarIndex;
 
   if ( rightShift === 0 ) { return this.copy( srcArray, 0, tarArray, 0, srcLen ) }
 
-  for ( srcIndex = tarLen + intShift - 1, tarIndex = tarLen - 1; tarIndex >= 0; srcIndex--, tarIndex-- ) {
-    var srcVal = srcArray[srcIndex] & this.INT16_MASK;
-
-    tarArray[tarIndex] = (srcVal >>> rightBitShift) | carry;
-    carry = (srcVal << leftBitShift) & this.INT16_MASK;
+  for ( srcIndex = intShift, tarIndex = 0; tarIndex < tarLen; srcIndex++, tarIndex++ ) {
+    carry = (srcArray[srcIndex + 1] << leftBitShift) & this.INT16_MASK;
+    tarArray[tarIndex] = ((srcArray[srcIndex] & this.INT16_MASK) >>> rightBitShift) | carry;
   }
 
   return tarArray;
@@ -445,30 +443,23 @@ redscale.magnitude.toInt32 = function( aArray ) {
 };
 
 redscale.magnitude.toString = function( aSigNum, aArray, radix ) {
-  var redmag = this,
-      dArray = this.RADIX_DIVISOR32_INDEX[radix],
+  var dArray = this.RADIX_DIVISOR32_INDEX[radix],
       remLen = this.RADIX_INT32_INDEX[radix],
-      aString = "";
+      aString = "",
+      quotRem = this.divide( aArray, dArray ),
+      strVal = this.toInt32( quotRem[1] ).toString( radix );
 
-  function internalToString( aArray, aString ) {
-    var
-      quotRem = redmag.divide( aArray, dArray ),
-      strVal = redmag.toInt32( quotRem[1] ).toString(radix);
-
-    if ( !redmag.isZero( quotRem[0] ) ) {
-      aString = redmag.ZERO_STRING.slice( 0, (remLen - strVal.length) ) + strVal + aString;
-
-      return internalToString( quotRem[0], aString );
-    } else {
-      aString = strVal + aString;
-
-      if ( aSigNum < 0 ) { aString = "-" + aString; }
-
-      return aString;
-    }
+  while ( !this.isZero( quotRem[0] ) ) {
+    aString = this.ZERO_STRING.slice( 0, (remLen - strVal.length) ) + strVal + aString;
+    quotRem = this.divide( quotRem[0], dArray );
+    strVal = this.toInt32( quotRem[1] ).toString( radix );
   }
 
-  return internalToString( aArray, aString );
+  aString = strVal + aString;
+
+  if ( aSigNum < 0 ) { aString = "-" + aString; }
+
+  return aString;
 };
 
 redscale.magnitude.toNumber = function( aSigNum, aArray ) {
@@ -497,12 +488,17 @@ redscale.magnitude.fromString = function( aString, radix ) {
       radixLen = this.RADIX_INT16_INDEX[radix],
       aStrIndex = 0,
       aStrSlice = (aStrLen % radixLen) || radixLen,
-      aVal;
-
-  function multiplyAdd( aArray, aLen, aVal ) {
-    var
-      carry = 0,
+      aVal,
+      carry,
       aIndex;
+
+  aVal = parseInt( aString.slice( aStrIndex, aStrSlice ), radix );
+  aArray[0] = aVal;
+
+  for ( aStrIndex += aStrSlice; aStrIndex < aStrLen; aStrIndex += radixLen ) {
+    aVal = parseInt( aString.slice( aStrIndex, aStrIndex + radixLen ), radix );
+
+    carry = 0;
 
     for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
       var
@@ -521,19 +517,9 @@ redscale.magnitude.fromString = function( aString, radix ) {
       aArray[aIndex] = sum & INT16_MASK;
       carry = sum >>> 16;
     }
-
-    return aArray;
   }
 
-  aVal = parseInt( aString.slice( aStrIndex, aStrSlice ), radix );
-  aArray[0] = aVal;
-
-  for ( aStrIndex += aStrSlice; aStrIndex < aStrLen; aStrIndex += radixLen ) {
-    aVal = parseInt( aString.slice( aStrIndex, aStrIndex + radixLen ), radix );
-    multiplyAdd( aArray, aLen, aVal );
-  }
-
-  return this.trimLeadingZeroes( aArray, aLen );
+  return this.trimLeadingZeroes( aArray );
 };
 
 //fromNumber - Expects aNum <= Number.MAX_SAFE_INTEGER
