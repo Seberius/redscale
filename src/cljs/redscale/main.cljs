@@ -2,18 +2,24 @@
 
 (defprotocol IPrecisionMath
   (add [this b])
-  (subtract [this b])
-  (multiply [this b])
-  (divide [this b])
+  (sub [this b])
+  (mul [this b])
+  (div [this b])
   (gcd [this b]))
 
-(deftype BigInteger [sign magnitude maglen]
-  Object
-  (to-string [this radix] (redscale.magnitude/arrayToString sign magnitude radix))
-  (of-value [this] this)
-  (to-number [this] (redscale.magnitude/arrayToNumber sign magnitude))
-  IPrecisionMath
+(extend-protocol IPrecisionMath
+  BigInteger
   (add [this b] )
-  (subtract [this b] )
-  (multiply [this b] )
-  (divide [this b] ))
+  (sub [this b] )
+  (mul [this b] )
+  (div [this b] )
+  Ratio
+  (add [this b] )
+  (sub [this b] )
+  (mul [this b] )
+  (div [this b] )
+  Number
+  (add [this b] )
+  (sub [this b] )
+  (mul [this b] )
+  (div [this b] ))
