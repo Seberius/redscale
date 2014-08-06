@@ -443,7 +443,8 @@ redscale.magnitude.toInt32 = function( aArray ) {
 };
 
 redscale.magnitude.toString = function( aSigNum, aArray, radix ) {
-  var dArray = this.RADIX_DIVISOR32_INDEX[radix],
+  var radix = (2 <= radix && radix <= 36) ? radix : 10,
+      dArray = this.RADIX_DIVISOR32_INDEX[radix],
       remLen = this.RADIX_INT32_INDEX[radix],
       aString = "",
       quotRem = this.divide( aArray, dArray ),
@@ -536,8 +537,7 @@ redscale.magnitude.fromSafeNumber = function( aNum ) {
 };
 
 redscale.magnitude.fromExpoNumber = function( aNum ) {
-  var INT16_MASK = this.INT16_MASK,
-      expNum = aNum.toExponential().match( /\d+(\.\d+)?/g ),
+  var expNum = aNum.toExponential().match( /\d+(\.\d+)?/g ),
       numStr = expNum[0].replace( /\./g, ""),
       numMag = this.fromString( numStr, 10 ),
       numExp = parseInt( expNum[1], 10 ),
@@ -551,17 +551,17 @@ redscale.magnitude.fromExpoNumber = function( aNum ) {
 
   while ( zeroCount-- ) {
     for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
-      prod = (aArray[aIndex] & INT16_MASK) * 10000 + carry;
+      prod = (aArray[aIndex] & this.INT16_MASK) * 10000 + carry;
 
-      aArray[aIndex] = prod & INT16_MASK;
+      aArray[aIndex] = prod & this.INT16_MASK;
       carry = prod >>> 16;
     }
   }
 
   for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
-    prod = (aArray[aIndex] & INT16_MASK) * (Math.pow( 10, (numZero % 4))) + carry;
+    prod = (aArray[aIndex] & this.INT16_MASK) * (Math.pow( 10, (numZero % 4))) + carry;
 
-    aArray[aIndex] = prod & INT16_MASK;
+    aArray[aIndex] = prod & this.INT16_MASK;
     carry = prod >>> 16;
   }
 
