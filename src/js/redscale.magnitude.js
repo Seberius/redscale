@@ -377,7 +377,7 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
 redscale.magnitude.divide = function( nArray, dArray ) {
   var nLen = nArray.length,
       dLen = dArray.length,
-      ndComp = this.compare( nArray, nLen, dArray, dLen );
+      ndComp = this.compare( nArray, dArray );
 
   if ( this.isZero( dArray ) ) { throw new Error( "Division by zero." ) }
   if ( this.isZero( nArray ) ) { return [new Int16Array( 0 ), new Int16Array( 0 )]; }
@@ -406,7 +406,7 @@ redscale.magnitude.binaryGCD = function( aArray, bArray ) {
     if ( !this.isOdd( bArray ) ) {
       bArray = this.bitShiftRight( bArray, this.numberTrailingZeroes( bArray, bLen ) );
     } else {
-      abComp = this.compare( aArray, aLen, bArray, bLen );
+      abComp = this.compare( aArray, bArray );
 
       if ( abComp === 1 ) {
         temp = this.subtract( aArray, bArray );
@@ -424,11 +424,13 @@ redscale.magnitude.binaryGCD = function( aArray, bArray ) {
 redscale.magnitude.gcd = function( aArray, bArray ) {
   var temp;
 
-  while ( Math.abs( aArray.length - bArray.length ) > 1 ) {
+  while ( Math.abs( aArray.length - bArray.length ) > 1 && this.isZero( bArray ) ) {
     temp = this.divide( aArray, bArray );
     aArray = bArray;
     bArray = temp[1];
   }
+
+  if ( this.isZero( bArray ) ) { return aArray; }
 
   return this.binaryGCD( aArray, bArray );
 };
@@ -443,17 +445,17 @@ redscale.magnitude.toInt32 = function( aArray ) {
 };
 
 redscale.magnitude.toString = function( aSigNum, aArray, radix ) {
-  var radix = (2 <= radix && radix <= 36) ? radix : 10,
-      dArray = this.RADIX_DIVISOR32_INDEX[radix],
-      remLen = this.RADIX_INT32_INDEX[radix],
+  var aRadix = (2 <= radix && radix <= 36) ? radix : 10,
+      dArray = this.RADIX_DIVISOR32_INDEX[aRadix],
+      remLen = this.RADIX_INT32_INDEX[aRadix],
       aString = "",
       quotRem = this.divide( aArray, dArray ),
-      strVal = this.toInt32( quotRem[1] ).toString( radix );
+      strVal = this.toInt32( quotRem[1] ).toString( aRadix );
 
   while ( !this.isZero( quotRem[0] ) ) {
     aString = this.ZERO_STRING.slice( 0, (remLen - strVal.length) ) + strVal + aString;
     quotRem = this.divide( quotRem[0], dArray );
-    strVal = this.toInt32( quotRem[1] ).toString( radix );
+    strVal = this.toInt32( quotRem[1] ).toString( aRadix );
   }
 
   aString = strVal + aString;
@@ -537,8 +539,8 @@ redscale.magnitude.fromSafeNumber = function( aNum ) {
 };
 
 redscale.magnitude.fromExpoNumber = function( aNum ) {
-  var expNum = aNum.toExponential().match( /\d+(\.\d+)?/g ),
-      numStr = expNum[0].replace( /\./g, ""),
+  var expNum = aNum.toExponential().match( /[0-9]+([.0-9]+)?/g ),
+      numStr = expNum[0].replace( /[.]/, ""),
       numMag = this.fromString( numStr, 10 ),
       numExp = parseInt( expNum[1], 10 ),
       numZero = numExp - numStr.length + 1,
@@ -559,7 +561,7 @@ redscale.magnitude.fromExpoNumber = function( aNum ) {
   }
 
   for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
-    prod = (aArray[aIndex] & this.INT16_MASK) * (Math.pow( 10, (numZero % 4))) + carry;
+    prod = (aArray[aIndex] & this.INT16_MASK) * (Math.pow( 10, (numZero % 4) )) + carry;
 
     aArray[aIndex] = prod & this.INT16_MASK;
     carry = prod >>> 16;
@@ -570,6 +572,8 @@ redscale.magnitude.fromExpoNumber = function( aNum ) {
 
 redscale.magnitude.fromNumber = function( aNum ) {
   if ( !Number.isFinite( aNum ) ) { throw new Error( "RedScale: Number is not finite." )}
+
+  aNum = Math.abs( aNum );
 
   if ( aNum <= 9007199254740991 ) {
     return this.fromSafeNumber( aNum );

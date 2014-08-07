@@ -1,55 +1,108 @@
-goog.provide(redscale.biginteger);
-goog.provide(redscale.biginteger.BigInteger);
+goog.provide(redscale.BigInteger);
 
-redscale.biginteger.BigInteger = function( signum, magnitude ) {
+redscale.BigInteger = function( signum, magnitude ) {
   this.redscaleType = "BigInteger";
   this.signum = signum;
   this.magnitude = magnitude;
 };
 
-redscale.biginteger.BigInteger.prototype.add = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.biginteger.add( this, bVal ) :
-         typeof bVal === "number" ? redscale.biginteger.add( this, redscale.biginteger.fromNumber( bVal ) ) :
+redscale.BigInteger.prototype.add = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.add( this, bVal ) :
+         typeof bVal === "number" ? redscale.BigInteger.add( this, redscale.BigInteger.fromNumber( bVal ) ) :
          function() { throw new TypeError( "Not a number." ); };
 };
 
-redscale.biginteger.BigInteger.prototype.sub = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.biginteger.subtract( this, bVal ) :
-         typeof bVal === "number" ? redscale.biginteger.subtract( this, redscale.biginteger.fromNumber( bVal ) ) :
+redscale.BigInteger.prototype.sub = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.subtract( this, bVal ) :
+         typeof bVal === "number" ? redscale.BigInteger.subtract( this, redscale.BigInteger.fromNumber( bVal ) ) :
          function() { throw new TypeError( "Not a number." ); };
 };
 
-redscale.biginteger.BigInteger.prototype.mul = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.biginteger.multiply( this, bVal ) :
-         typeof bVal === "number" ? redscale.biginteger.multiply( this, redscale.biginteger.fromNumber( bVal ) ) :
+redscale.BigInteger.prototype.mul = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.multiply( this, bVal ) :
+         typeof bVal === "number" ? redscale.BigInteger.multiply( this, redscale.BigInteger.fromNumber( bVal ) ) :
          function() { throw new TypeError( "Not a number." ); };
 };
 
-redscale.biginteger.BigInteger.prototype.div = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.biginteger.divide( this, bVal ) :
-         typeof bVal === "number" ? redscale.biginteger.divide( this, redscale.biginteger.fromNumber( bVal ) ) :
+redscale.BigInteger.prototype.div = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.divide( this, bVal ) :
+         typeof bVal === "number" ? redscale.BigInteger.divide( this, redscale.BigInteger.fromNumber( bVal ) ) :
          function() { throw new TypeError( "Not a number." ); };
 };
 
-redscale.biginteger.BigInteger.prototype.rem = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.biginteger.remainder( this, bVal ) :
-         typeof bVal === "number" ? redscale.biginteger.remailnder( this, redscale.biginteger.fromNumber( bVal ) ) :
+redscale.BigInteger.prototype.rem = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.remainder( this, bVal ) :
+         typeof bVal === "number" ? redscale.BigInteger.remainder( this, redscale.BigInteger.fromNumber( bVal ) ) :
          function() { throw new TypeError( "Not a number." ); };
 };
 
-redscale.biginteger.BigInteger.prototype.toString = function( radix ) {
+redscale.BigInteger.prototype.divRem = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.divideRem( this, bVal ) :
+         typeof bVal === "number" ? redscale.BigInteger.divideRem( this, redscale.BigInteger.fromNumber( bVal ) ) :
+         function() { throw new TypeError( "Not a number." ); };
+};
+
+redscale.BigInteger.prototype.gcd = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.gcd( this, bVal ) :
+         typeof bVal === "number" ? redscale.BigInteger.gcd( this, redscale.BigInteger.fromNumber( bVal ) ) :
+         function() { throw new TypeError( "Not a number." ); };
+};
+
+redscale.BigInteger.prototype.toString = function( radix ) {
   return redscale.magnitude.toString( this.signum, this.magnitude, radix );
 };
 
-redscale.biginteger.BigInteger.prototype.toNumber = function() {
+redscale.BigInteger.prototype.ofValue = function() {
   return redscale.magnitude.toNumber( this.signum, this.magnitude );
 };
 
-redscale.biginteger.BigInteger.fromNumber = function( aNum ) {
-  return redscale.biginteger.fromNumber( aNum );
+redscale.BigInteger.prototype.toNumber = function() {
+  return redscale.magnitude.toNumber( this.signum, this.magnitude );
 };
 
-redscale.biginteger.add = function( aVal, bVal ) {
+redscale.BigInteger.prototype.negate = function() {
+  return new redscale.BigInteger( this.signum * -1, this.magnitude );
+};
+
+redscale.BigInteger.prototype.abs = function() {
+  return this.signum === -1 ? this.negate() : this;
+};
+
+redscale.BigInteger.ZERO = function() {
+  return new this( 0, new Int16Array( 0 ) );
+};
+
+redscale.BigInteger.ONE = function() {
+  return new this( 1, new Int16Array( [1] ) );
+};
+
+redscale.BigInteger.fromString = function( aStr, radix ) {
+  var aRadix = radix ? radix : 10,
+      aStrMag = aStr.match( /[a-z0-9]+/i ),
+      leadingZeroes,
+      aSig,
+      aMag;
+
+  if ( aStrMag.length === 0 ) { throw new Error( "Zero length number." ) }
+
+  leadingZeroes = aStr.match( /[0]/ );
+
+  if ( leadingZeroes.length === aStrMag.length ) { return this.ZERO() }
+
+  aMag = redscale.magnitude.fromString( aStrMag.slice( leadingZeroes.length ), aRadix );
+  aSig = aStr.indexOf( "-" ) === 0 ? -1 : 1;
+
+  return new this( aSig, aMag );
+};
+
+redscale.BigInteger.fromNumber = function( aNum ) {
+  var aSig = aNum === 0 ? 0 : aNum > 0 ? 1 : -1,
+      aMag = redscale.magnitude.fromNumber( aNum * aSig );
+
+  return new this( aSig, aMag );
+};
+
+redscale.BigInteger.add = function( aVal, bVal ) {
   var abComp,
       dSig,
       dMag;
@@ -74,10 +127,10 @@ redscale.biginteger.add = function( aVal, bVal ) {
     }
   }
 
-  return new this.BigInteger( dSig, dMag );
+  return new this( dSig, dMag );
 };
 
-redscale.biginteger.subtract = function( aVal, bVal ) {
+redscale.BigInteger.subtract = function( aVal, bVal ) {
   var abComp,
       sSig,
       sMag;
@@ -102,10 +155,10 @@ redscale.biginteger.subtract = function( aVal, bVal ) {
     }
   }
 
-  return new this.BigInteger( sSig, sMag );
+  return new this( sSig, sMag );
 };
 
-redscale.biginteger.multiply = function( aVal, bVal ) {
+redscale.BigInteger.multiply = function( aVal, bVal ) {
   var pSig,
       pMag;
 
@@ -114,10 +167,10 @@ redscale.biginteger.multiply = function( aVal, bVal ) {
   pSig = aVal.signum === bVal.signum ? 1 : -1;
   pMag = redscale.magnitude.multiply( aVal.magnitude, bVal.magnitude );
 
-  return new this.BigInteger( pSig, pMag );
+  return new this( pSig, pMag );
 };
 
-redscale.biginteger.divide = function( aVal, bVal ) {
+redscale.BigInteger.divide = function( aVal, bVal ) {
   var qSig,
       qMag;
 
@@ -125,22 +178,44 @@ redscale.biginteger.divide = function( aVal, bVal ) {
   qSig = qMag.length === 0 ? 0 :
          aVal.signum === bVal.signum ? 1 : -1;
 
-  return new this.BigInteger( qSig, qMag );
+  return new this( qSig, qMag );
 };
 
-redscale.biginteger.remainder = function( aVal, bVal ) {
+redscale.BigInteger.remainder = function( aVal, bVal ) {
+  var rSig,
+      rMag;
+
+  rMag = redscale.magnitude.divide( aVal.magnitude, bVal.magnitude )[1];
+  rSig = rMag.length === 0 ? 0 : aVal.signum;
+
+  return new this( rSig, rMag );
+};
+
+// Divide and Remainder - returns an array containing a quotient BigInteger and remainder BigInteger
+redscale.BigInteger.divideRem = function( aVal, bVal ) {
   var qSig,
-      qMag;
+      rSig,
+      qMag,
+      rMag,
+      quotRem;
 
-  qMag = redscale.magnitude.divide( aVal.magnitude, bVal.magnitude )[1];
-  qSig = qMag.length === 0 ? 0 : aVal.signum;
+  quotRem = redscale.magnitude.divide( aVal.magnitude, bVal.magnitude );
+  qMag = quotRem[0];
+  qSig = qMag.length === 0 ? 0 :
+         aVal.signum === bVal.signum ? 1 : -1;
+  rMag = quotRem[1];
+  rSig = rMag.length === 0 ? 0 : aVal.signum;
 
-  return new this.BigInteger( qSig, qMag );
+  return [new this( qSig, qMag ), new this( rSig, rMag )];
 };
 
-redscale.biginteger.fromNumber = function( aNum ) {
-  var aSig = aNum === 0 ? 0 : aNum > 0 ? 1 : -1,
-      aMag = redscale.magnitude.fromNumber( aNum * aSig );
+redscale.BigInteger.gcd = function( aVal, bVal ) {
+  var gMag;
 
-  return new this.BigInteger( aSig, aMag );
+  if ( aVal.signum === 0 ) { return bVal.abs() }
+  if ( bVal.signum === 0 ) { return aVal.abs() }
+
+  gMag = redscale.magnitude.gcd( aVal.magnitude, bVal.magnitude );
+
+  return new this( 1, gMag );
 };
