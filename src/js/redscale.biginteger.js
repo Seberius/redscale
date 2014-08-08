@@ -35,7 +35,7 @@ redscale.BigInteger.prototype.add = function( bVal ) {
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.sub = function( bVal ) {
+redscale.BigInteger.prototype.subtract = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.subtract( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.subtract( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
@@ -48,7 +48,7 @@ redscale.BigInteger.prototype.sub = function( bVal ) {
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.mul = function( bVal ) {
+redscale.BigInteger.prototype.multiply = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.multiply( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.multiply( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
@@ -61,7 +61,7 @@ redscale.BigInteger.prototype.mul = function( bVal ) {
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.div = function( bVal ) {
+redscale.BigInteger.prototype.divide = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.divide( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.divide( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
@@ -74,7 +74,7 @@ redscale.BigInteger.prototype.div = function( bVal ) {
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.rem = function( bVal ) {
+redscale.BigInteger.prototype.remainder = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.remainder( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.remainder( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
@@ -83,11 +83,11 @@ redscale.BigInteger.prototype.rem = function( bVal ) {
 /**
  * Divide - Returns an Array containing the RedScale types representing the quotient & remainder.
  * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
- * @returns {!Array<!redscale.BigInteger, !redscale.BigInteger>}
+ * @returns {!Int16Array[]}
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.divRem = function( bVal ) {
+redscale.BigInteger.prototype.divideRem = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.divideRem( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.divideRem( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
@@ -96,7 +96,7 @@ redscale.BigInteger.prototype.divRem = function( bVal ) {
 /**
  * GCD - Returns an Array containing the RedScale types representing the GCD.
  * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
- * @returns {!Array<!redscale.BigInteger, !redscale.BigInteger>}
+ * @returns {!redscale.BigInteger}
  * @throws {TypeError}
  * @export
  */
@@ -312,7 +312,7 @@ redscale.BigInteger.remainder = function( aVal, bVal ) {
  * Divide - Returns an Array of BigInteger representations of the quotient and remainder.
  * @param {!redscale.BigInteger} aVal
  * @param {!redscale.BigInteger} bVal
- * @returns {Array<!redscale.BigInteger, !redscale.BigInteger>}
+ * @returns {Int16Array[]}
  * @export
  */
 redscale.BigInteger.divideRem = function( aVal, bVal ) {
@@ -364,13 +364,14 @@ redscale.BigInteger.fromString = function( aStr, radix ) {
       aSig,
       aMag;
 
-  if ( aStrMag.length === 0 ) { throw new Error( "Zero length number." ) }
+  if ( aStrMag === null ) { throw new Error( "Zero length number." ) }
 
-  leadingZeroes = aStr.match( /[0]/ );
+  leadingZeroes = aStr.match( /[0]+/ );
 
-  if ( leadingZeroes.length === aStrMag.length ) { return redscale.BigInteger.ZERO() }
+  if ( leadingZeroes === null ) { leadingZeroes = [""]; }
+  if ( leadingZeroes[0].length === aStrMag.length ) { return redscale.BigInteger.ZERO() }
 
-  aMag = redscale.magnitude.fromString( aStrMag[0].slice( leadingZeroes.length ), aRadix );
+  aMag = redscale.magnitude.fromString( aStrMag[0].slice( leadingZeroes[0].length ), aRadix );
   aSig = aStr.indexOf( "-" ) === 0 ? -1 : 1;
 
   return new redscale.BigInteger( aSig, aMag );
