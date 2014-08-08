@@ -1,54 +1,138 @@
 goog.provide('redscale.magnitude');
 
+/**
+ * Int16 Mask
+ * @type {number}
+ * @const
+ */
 redscale.magnitude.INT16_MASK = 0xFFFF;
+
+/**
+ * Int16 Unsigned Mask
+ * @type {number}
+ * @const
+ */
 redscale.magnitude.INT16_UNSIGNED = 0x8000;
+
+/**
+ * Int32 Unsigned Mask
+ * @type {number}
+ * @const
+ */
 redscale.magnitude.INT32_UNSIGNED = 0x80000000;
+
+/**
+ * Int32 Divisor Radix Index
+ * @type {Int16Array[]}
+ * @const
+ */
 redscale.magnitude.RADIX_DIVISOR32_INDEX =
-  [null, null,
-    [0, 16384],      [-19493, 17734], [0, 16384],      [29589, 18626],  [-10240, 5535],  [-25449, 30171],
-    [0, 16384],      [-28343, 5911],  [-13824, 15258], [-9375, 3270],   [0, 6561],       [4129, 12447],
-    [-16128, 22518], [7023, 2607],    [0, 4096],       [17777, 6261],   [-17280, 9341],  [26235, 13639],
-    [16384, 19531],  [28189, 27482],  [2624, 1730],    [-9935, 2258],   [0, 2916],       [19025, 3725],
-    [-20928, 4713],  [-28343, 5911],  [4096, 7353],    [18585, 9076],   [-22464, 11123], [15169, 13542],
-    [0, 16384],      [15553, 19706],  [-10176, 23571], [-19175, 28049], [-23552, 922]];
+  [new Int16Array(0), new Int16Array(0),
+    new Int16Array([0, 16384]), new Int16Array([-19493, 17734]), new Int16Array([0, 16384]),
+    new Int16Array([29589, 18626]), new Int16Array([-10240, 5535]), new Int16Array([-25449, 30171]),
+    new Int16Array([0, 16384]), new Int16Array([-28343, 5911]), new Int16Array([-13824, 15258]),
+    new Int16Array([-9375, 3270]), new Int16Array([0, 6561]), new Int16Array([4129, 12447]),
+    new Int16Array([-16128, 22518]), new Int16Array([7023, 2607]), new Int16Array([0, 4096]),
+    new Int16Array([17777, 6261]), new Int16Array([-17280, 9341]), new Int16Array([26235, 13639]),
+    new Int16Array([16384, 19531]), new Int16Array([28189, 27482]), new Int16Array([2624, 1730]),
+    new Int16Array([-9935, 2258]), new Int16Array([0, 2916]), new Int16Array([19025, 3725]),
+    new Int16Array([-20928, 4713]), new Int16Array([-28343, 5911]), new Int16Array([4096, 7353]),
+    new Int16Array([18585, 9076]), new Int16Array([-22464, 11123]), new Int16Array([15169, 13542]),
+    new Int16Array([0, 16384]), new Int16Array([15553, 19706]), new Int16Array([-10176, 23571]),
+    new Int16Array([-19175, 28049]), new Int16Array([-23552, 922])];
+
+/**
+ * Int16 Divisor Radix Index
+ * @type {number[]}
+ * @const
+ */
 redscale.magnitude.RADIX_DIVISOR16_INDEX =
-  [null, null,
+  [0, 0,
     16384, 19683, 16384, 15625, 7776,  16807, 4096,  6561,  10000, 14641,
     20736, 28561, 2744,  3375,  4096,  4913,  5832,  6859,  8000,  9261,
     10648, 12167, 13824, 15625, 17576, 19683, 21952, 24389, 27000, 29791,
     1024,  1089,  1156,  1225,  1296];
+
+/**
+ * Int32 Radix Index
+ * @type {number[]}
+ * @const
+ */
 redscale.magnitude.RADIX_INT32_INDEX =
-  [null, null,
+  [0, 0,
     30, 19, 15, 13, 11, 11, 10, 9, 9, 8,
     8,  8,  8,  7,  7,  7,  7,  7, 7, 7,
     6,  6,  6,  6,  6,  6,  6,  6, 6, 6,
     6,  6,  6,  6,  5];
+
+/**
+ * Int16 Radix Index
+ * @type {number[]}
+ * @const
+ */
 redscale.magnitude.RADIX_INT16_INDEX =
-  [null, null,
+  [0, 0,
     14, 9, 7, 6, 5, 5, 4, 4, 4, 4,
     4,  4, 3, 3, 3, 3, 3, 3, 3, 3,
     3,  3, 3, 3, 3, 3, 3, 3, 3, 3,
     2,  2, 2, 2, 2];
+
+/**
+ * Bits per Radix Index
+ * @type {number[]}
+ * @const
+ */
 redscale.magnitude.RADIX_BIT_INDEX =
-  [null, null,
+  [0, 0,
     1,     1.585, 2,     2.322, 2.585, 2.808, 3,     3.17,  3.322, 3.46,
     3.585, 3.701, 3.808, 3.907, 4,     4.088, 4.17,  4.248, 4.322, 4.393,
     4.46,  4.524, 4.585, 4.644, 4.701, 4.755, 4.808, 4.858, 4.907, 4.955,
     5,     5.045, 5.088, 5.13,  5.17];
+
+/**
+ * Zero String
+ * @type {string}
+ * @const
+ */
 redscale.magnitude.ZERO_STRING = '00000000000000000000000000000';
 
+/**
+ * isZero
+ * @param {Int16Array} aArray
+ * @returns {boolean}
+ */
 redscale.magnitude.isZero = function( aArray ) {
   return aArray.length === 0;
 };
 
+/**
+ * isOdd
+ * @param {Int16Array} aArray
+ * @returns {boolean}
+ */
 redscale.magnitude.isOdd = function( aArray ) {
   return ((aArray[0] || 0) & 1) === 1;
 };
 
+/**
+ * isEven
+ * @param {Int16Array} aArray
+ * @returns {boolean}
+ */
 redscale.magnitude.isEven = function( aArray ) {
   return ((aArray[0] || 0) & 1) === 0;
 };
 
+/**
+ * Copy - Copies the value from one array to another. Require source array, source starting index,
+ * target array, target starting index, and copy length.
+ * @param {Int16Array} srcArray
+ * @param {number} srcStart
+ * @param {Int16Array} tarArray
+ * @param {number} tarStart
+ * @param {number} copyLength
+ * @returns {Int16Array}
+ */
 redscale.magnitude.copy = function( srcArray, srcStart, tarArray, tarStart, copyLength ) {
   var srcLimit = srcStart + copyLength;
 
@@ -59,6 +143,11 @@ redscale.magnitude.copy = function( srcArray, srcStart, tarArray, tarStart, copy
   return tarArray;
 };
 
+/**
+ * Integer Leading Zeroes - Counts the leading zeroes of a native number as if it were a signed 16-bit integer.
+ * @param {number} int
+ * @returns {number}
+ */
 redscale.magnitude.intLeadingZeroes = function( int ) {
   var zeroCount = 0;
 
@@ -83,10 +172,21 @@ redscale.magnitude.intLeadingZeroes = function( int ) {
   return zeroCount;
 };
 
+/**
+ * Integer Trailing Zeroes - Counts the trailing zeroes of a native number as if it were a signed 16-bit integer.
+ * @param {number} int
+ * @returns {number}
+ */
 redscale.magnitude.intTrailingZeroes = function( int ) {
   return 16 - this.intLeadingZeroes( (~ int) & (int - 1) );
 };
 
+/**
+ * Array Leading Zeroes - Counts the number of zeroes from the most significant bit to the first "on" bit.
+ * @param {Int16Array} aArray
+ * @param {number} aLen
+ * @returns {number}
+ */
 redscale.magnitude.numberLeadingZeroes = function( aArray, aLen ) {
   var aIndex;
 
@@ -95,14 +195,27 @@ redscale.magnitude.numberLeadingZeroes = function( aArray, aLen ) {
   return ((aLen - 1 - aIndex) << 4) + this.intLeadingZeroes( aArray[aIndex] );
 };
 
-redscale.magnitude.numberTrailingZeroes = function( aArray, aLen ) {
-  var aIndex;
+/**
+ * Array Trailing Zeroes - Counts the number of zeroes from the least significant bit to the last "on" bit.
+ * @param {!Int16Array} aArray
+ * @returns {!number}
+ */
+redscale.magnitude.numberTrailingZeroes = function( aArray ) {
+  var aLen = aArray.length,
+      aIndex;
 
   for ( aIndex = 0; (aIndex < (aLen - 1)) && (aArray[aIndex] === 0); aIndex++ ) { }
 
   return (aIndex << 4) + this.intTrailingZeroes( aArray[aIndex] );
 };
 
+/**
+ * Trim Leading Zeroes - Takes an array and removes leading zero integers.
+ *     Returns source array if there aren't any leading zeroes.
+ *     Returns an empty array if all zeroes.
+ * @param {Int16Array} srcArray
+ * @returns {Int16Array}
+ */
 redscale.magnitude.trimLeadingZeroes = function( srcArray ) {
   var srcLen = srcArray.length,
       tarArray,
@@ -118,6 +231,14 @@ redscale.magnitude.trimLeadingZeroes = function( srcArray ) {
   return tarArray;
 };
 
+/**
+ * Array Bit Shift Left - Shifts the source array left given bits.
+ *     Will also grow array by at least leftShift / 16 + extraZeroes, a feature for Knuth Division.
+ * @param {Int16Array} srcArray
+ * @param {number} leftShift
+ * @param {number} extraZeroes
+ * @returns {Int16Array}
+ */
 redscale.magnitude.bitShiftLeft = function( srcArray, leftShift, extraZeroes ) {
   var srcLen = srcArray.length,
       intShift = leftShift >>> 4,
@@ -144,6 +265,13 @@ redscale.magnitude.bitShiftLeft = function( srcArray, leftShift, extraZeroes ) {
   return tarArray;
 };
 
+/**
+ * Array Bit Shift Left - Shifts the source array left given bits.
+ *     Will shrink array to minimum size required.
+ * @param {!Int16Array} srcArray
+ * @param {!number} rightShift
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.bitShiftRight = function( srcArray, rightShift ) {
   var srcLen = srcArray.length,
       leadingZeroes = this.numberLeadingZeroes( srcArray, srcLen ),
@@ -166,6 +294,12 @@ redscale.magnitude.bitShiftRight = function( srcArray, rightShift ) {
   return tarArray;
 };
 
+/**
+ * Compare - Compares two arrays. Returns 1 if a is larger, -1 if b is larger, and 0 if they are equal.
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} bArray
+ * @returns {!number}
+ */
 redscale.magnitude.compare = function( aArray, bArray ) {
   var aLen = aArray.length,
       bLen = bArray.length,
@@ -186,7 +320,12 @@ redscale.magnitude.compare = function( aArray, bArray ) {
   return 0;
 };
 
-// Addition
+/**
+ * Add - Returns an array representation of the sum.
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} bArray
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.add = function( aArray, bArray ) {
   var aLen = aArray.length,
       bLen = bArray.length,
@@ -208,7 +347,12 @@ redscale.magnitude.add = function( aArray, bArray ) {
   return this.trimLeadingZeroes( sArray );
 };
 
-// Subtraction
+/**
+ * Subtract - Returns an array representation of the difference.
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} bArray
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.subtract = function( aArray, bArray ) {
   var aLen = aArray.length,
       bLen = aArray.length,
@@ -235,7 +379,12 @@ redscale.magnitude.subtract = function( aArray, bArray ) {
   return this.trimLeadingZeroes( dArray );
 };
 
-// Multiplication
+/**
+ * Multiply - Returns an array representation of the product.
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} bArray
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.multiply = function( aArray, bArray ) {
   var aLen = aArray.length,
       bLen = bArray.length,
@@ -261,7 +410,13 @@ redscale.magnitude.multiply = function( aArray, bArray ) {
   return this.trimLeadingZeroes( pArray );
 };
 
-//Divide by 1n
+/**
+ * Divide array by 16bit integer - Returns an Array of Arrays representing the quotient and remainder.
+ * @param {!Int16Array} nArray
+ * @param {!number} nLen
+ * @param {!Int16Array} dArray
+ * @returns {!Int16Array[]}
+ */
 redscale.magnitude.divideBy1n = function( nArray, nLen, dArray ) {
   var shiftNum,
       dInt32,
@@ -299,7 +454,14 @@ redscale.magnitude.divideBy1n = function( nArray, nLen, dArray ) {
   return [this.trimLeadingZeroes( qArray ), new Int16Array( rem === 0 ? 0 : [rem] )];
 };
 
-// Knuth Division
+/**
+ * Knuth Division - Returns an Array of Arrays representing the quotient and remainder.
+ * @param {!Int16Array} nArray
+ * @param {!number} nLen
+ * @param {!Int16Array} dArray
+ * @param {!number} dLen
+ * @returns {!Int16Array[]}
+ */
 redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
   var INT16_MASK = this.INT16_MASK,
       qLen = nLen - dLen + 1,
@@ -313,7 +475,7 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
       qIndex,
       aIndex;
 
-  function divMulSub( quot, aArray, bArray, qIndex, bLen ) {
+  var divMulSub = function( quot, aArray, bArray, qIndex, bLen ) {
     var carry = 0,
         aIndex,
         bIndex;
@@ -329,9 +491,9 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
     aArray[aIndex] = (aArray[aIndex] & INT16_MASK) - (carry & INT16_MASK);
 
     return carry;
-  }
+  };
 
-  function divAdd( aArray, bArray, qIndex, bLen ) {
+  var divAdd = function( aArray, bArray, qIndex, bLen ) {
     var
       carry = 0,
       aIndex,
@@ -347,7 +509,7 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
     aArray[aIndex] += carry;
 
     return carry;
-  }
+  };
 
   for ( qIndex = qLen - 1, aIndex = nLen; qIndex >= 0; qIndex--, aIndex-- ) {
     var aHigh = aArray[aIndex],
@@ -373,7 +535,12 @@ redscale.magnitude.divideKnuth = function( nArray, nLen, dArray, dLen ) {
   return [this.trimLeadingZeroes( qArray ), this.bitShiftRight( aArray, shiftNum )];
 };
 
-//Divide
+/**
+ * Divide - Returns an Array of Arrays representing the quotient and remainder.
+ * @param {!Int16Array} nArray
+ * @param {!Int16Array} dArray
+ * @returns {!Int16Array[]}
+ */
 redscale.magnitude.divide = function( nArray, dArray ) {
   var nLen = nArray.length,
       dLen = dArray.length,
@@ -388,7 +555,12 @@ redscale.magnitude.divide = function( nArray, dArray ) {
   return this.divideKnuth( nArray, nLen, dArray, dLen );
 };
 
-// GCD
+/**
+ * Binary GCD - Returns an array representing the GCD.
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} bArray
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.binaryGCD = function( aArray, bArray ) {
   var aZero = this.numberTrailingZeroes( aArray ),
       bZero = this.numberTrailingZeroes( bArray ),
@@ -399,12 +571,10 @@ redscale.magnitude.binaryGCD = function( aArray, bArray ) {
   bArray = this.bitShiftRight( bArray, bZero );
 
   while ( !this.isZero( bArray ) ) {
-    var aLen = aArray.length,
-        bLen = bArray.length,
-        abComp;
+    var abComp;
 
     if ( !this.isOdd( bArray ) ) {
-      bArray = this.bitShiftRight( bArray, this.numberTrailingZeroes( bArray, bLen ) );
+      bArray = this.bitShiftRight( bArray, this.numberTrailingZeroes( bArray ) );
     } else {
       abComp = this.compare( aArray, bArray );
 
@@ -421,6 +591,12 @@ redscale.magnitude.binaryGCD = function( aArray, bArray ) {
   return this.bitShiftLeft( aArray, shiftNum, 0 );
 };
 
+/**
+ * GCD = Returns an array representing the GCD.
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} bArray
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.gcd = function( aArray, bArray ) {
   var temp;
 
@@ -435,15 +611,27 @@ redscale.magnitude.gcd = function( aArray, bArray ) {
   return this.binaryGCD( aArray, bArray );
 };
 
-//toString
+/**
+ * toInt32 - Returns a number equal to the Unsigned 32bit value of
+ *     the least significant integers of an array.
+ * @param {!Int16Array} aArray
+ * @returns {!number}
+ */
 redscale.magnitude.toInt32 = function( aArray ) {
   var
   aHigh = aArray[1] || 0,
   aLow = aArray[0] || 0;
 
-  return ((aHigh & this.INT16_MASK) << 16) | (aLow & this.INT16_MASK);
+  return ((aHigh & this.INT16_MASK) * 65536) + (aLow & this.INT16_MASK);
 };
 
+/**
+ * toString - Returns a string representing the precise value of an array and signum.
+ * @param {!number} aSigNum
+ * @param {!Int16Array} aArray
+ * @param {!number} radix
+ * @returns {!string}
+ */
 redscale.magnitude.toString = function( aSigNum, aArray, radix ) {
   var aRadix = (2 <= radix && radix <= 36) ? radix : 10,
       dArray = this.RADIX_DIVISOR32_INDEX[aRadix],
@@ -465,6 +653,14 @@ redscale.magnitude.toString = function( aSigNum, aArray, radix ) {
   return aString;
 };
 
+/**
+ * toNumber - Returns the closest precision representation possible
+ *     of an array and signum as a native JS number.
+ *     Precise if Number.isSafeInteger(result).
+ * @param {!number} aSigNum
+ * @param {!Int16Array} aArray
+ * @returns {!number}
+ */
 redscale.magnitude.toNumber = function( aSigNum, aArray ) {
   var aLen = aArray.length,
       aVal = aArray[aLen - 1] & this.INT16_MASK,
@@ -477,11 +673,15 @@ redscale.magnitude.toNumber = function( aSigNum, aArray ) {
     aVal += aArray[aIndex] & this.INT16_MASK;
   }
 
-  aVal *= aSigNum;
-
-  return aVal;
+  return aVal * aSigNum;
 };
 
+/**
+ * fromString - Returns an array representing the value of the string with the given radix.
+ * @param {!string} aString
+ * @param {!number} radix
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.fromString = function( aString, radix ) {
   var INT16_MASK = this.INT16_MASK,
       aStrLen = aString.length,
@@ -525,7 +725,11 @@ redscale.magnitude.fromString = function( aString, radix ) {
   return this.trimLeadingZeroes( aArray );
 };
 
-//fromNumber - Expects aNum <= Number.MAX_SAFE_INTEGER
+/**
+ * fromNumber - Returns an array representing the value of a number.
+ * @param {!number} aNum
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.fromSafeNumber = function( aNum ) {
   var aArray = new Int16Array(4),
       aIndex = 0;
@@ -538,6 +742,12 @@ redscale.magnitude.fromSafeNumber = function( aNum ) {
   return this.trimLeadingZeroes( aArray );
 };
 
+/**
+ * fromExpoNumber - Returns an array representing the value of a number
+ *     that is greater than Integer.MAX_SAFE_INTEGER.
+ * @param {!number} aNum
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.fromExpoNumber = function( aNum ) {
   var expNum = aNum.toExponential().match( /[0-9]+([.0-9]+)?/g ),
       numStr = expNum[0].replace( /[.]/, ""),
@@ -570,6 +780,12 @@ redscale.magnitude.fromExpoNumber = function( aNum ) {
   return this.trimLeadingZeroes( aArray );
 };
 
+/**
+ * fromSafeNumber - Returns an array representing the value of a number
+ *     this is less than or equal to Integer.MAX_SAFE_INTEGER.
+ * @param aNum
+ * @returns {!Int16Array}
+ */
 redscale.magnitude.fromNumber = function( aNum ) {
   if ( !Number.isFinite( aNum ) ) { throw new Error( "RedScale: Number is not finite." )}
 
