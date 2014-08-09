@@ -107,6 +107,15 @@ redscale.BigInteger.prototype.gcd = function( bVal ) {
 };
 
 /**
+ * Equals - Returns a boolean value for whether this BigInteger is equal to bVal.
+ * @param {!redscale.BigInteger} bVal
+ * @returns {boolean}
+ */
+redscale.BigInteger.prototype.equals = function( bVal ) {
+  return redscale.BigInteger.equals( this, bVal );
+};
+
+/**
  * toString - Returns a string exactly representing the BigInteger.
  * @param {number} radix - A number in the range of 2 - 36.
  * @returns {!string}
@@ -114,7 +123,7 @@ redscale.BigInteger.prototype.gcd = function( bVal ) {
  * @export
  */
 redscale.BigInteger.prototype.toString = function( radix ) {
-  return redscale.magnitude.toString( this.signum, this.magnitude, radix );
+  return redscale.toString( this.signum, this.magnitude, radix );
 };
 
 /**
@@ -124,7 +133,7 @@ redscale.BigInteger.prototype.toString = function( radix ) {
  * @export
  */
 redscale.BigInteger.prototype.ofValue = function() {
-  return redscale.magnitude.toNumber( this.signum, this.magnitude );
+  return redscale.toNumber( this.signum, this.magnitude );
 };
 
 /**
@@ -134,7 +143,7 @@ redscale.BigInteger.prototype.ofValue = function() {
  * @export
  */
 redscale.BigInteger.prototype.toNumber = function() {
-  return redscale.magnitude.toNumber( this.signum, this.magnitude );
+  return redscale.toNumber( this.signum, this.magnitude );
 };
 
 /**
@@ -200,19 +209,19 @@ redscale.BigInteger.add = function( aVal, bVal ) {
   if ( bVal.signum === 0 ) { return aVal; }
   if ( aVal.signum === bVal.signum ) {
     dSig = aVal.signum;
-    dMag = redscale.magnitude.add( aVal.magnitude, bVal.magnitude );
+    dMag = redscale.add( aVal.magnitude, bVal.magnitude );
   } else {
-    abComp = redscale.magnitude.compare( aVal.magnitude, bVal.magnitude );
+    abComp = redscale.compare( aVal.magnitude, bVal.magnitude );
 
     if ( abComp === 0 ) {
       dSig = 0;
       dMag = new Int16Array( 0 );
     } else if ( abComp > 0 ) {
       dSig = abComp === aVal.signum ? 1 : -1;
-      dMag = redscale.magnitude.subtract( aVal.magnitude, bVal.magnitude );
+      dMag = redscale.subtract( aVal.magnitude, bVal.magnitude );
     } else {
       dSig = abComp === aVal.signum ? 1 : -1;
-      dMag = redscale.magnitude.subtract( bVal.magnitude, aVal.magnitude );
+      dMag = redscale.subtract( bVal.magnitude, aVal.magnitude );
     }
   }
 
@@ -235,19 +244,19 @@ redscale.BigInteger.subtract = function( aVal, bVal ) {
   if ( bVal.signum === 0 ) { return aVal; }
   if ( aVal.signum !== bVal.signum ) {
     sSig = aVal.signum;
-    sMag = redscale.magnitude.add( aVal.magnitude, bVal.magnitude );
+    sMag = redscale.add( aVal.magnitude, bVal.magnitude );
   } else {
-    abComp = redscale.magnitude.compare( aVal.magnitude, bVal.magnitude );
+    abComp = redscale.compare( aVal.magnitude, bVal.magnitude );
 
     if ( abComp === 0 ) {
       sSig = 0;
       sMag = new Int16Array( 0 );
     } else if ( abComp > 0 ) {
       sSig = abComp === aVal.signum ? 1 : -1;
-      sMag = redscale.magnitude.subtract( aVal.magnitude, bVal.magnitude );
+      sMag = redscale.subtract( aVal.magnitude, bVal.magnitude );
     } else {
       sSig = abComp === aVal.signum ? 1 : -1;
-      sMag = redscale.magnitude.subtract( bVal.magnitude, aVal.magnitude );
+      sMag = redscale.subtract( bVal.magnitude, aVal.magnitude );
     }
   }
 
@@ -268,7 +277,7 @@ redscale.BigInteger.multiply = function( aVal, bVal ) {
   if ( aVal.signum === 0 || bVal.signum === 0 ) { return new redscale.BigInteger( 0, new Int16Array( 0 ) ) }
 
   pSig = aVal.signum === bVal.signum ? 1 : -1;
-  pMag = redscale.magnitude.multiply( aVal.magnitude, bVal.magnitude );
+  pMag = redscale.multiply( aVal.magnitude, bVal.magnitude );
 
   return new redscale.BigInteger( pSig, pMag );
 };
@@ -284,7 +293,7 @@ redscale.BigInteger.divide = function( aVal, bVal ) {
   var qSig,
       qMag;
 
-  qMag = redscale.magnitude.divide( aVal.magnitude, bVal.magnitude )[0];
+  qMag = redscale.divide( aVal.magnitude, bVal.magnitude )[0];
   qSig = qMag.length === 0 ? 0 :
          aVal.signum === bVal.signum ? 1 : -1;
 
@@ -302,7 +311,7 @@ redscale.BigInteger.remainder = function( aVal, bVal ) {
   var rSig,
       rMag;
 
-  rMag = redscale.magnitude.divide( aVal.magnitude, bVal.magnitude )[1];
+  rMag = redscale.divide( aVal.magnitude, bVal.magnitude )[1];
   rSig = rMag.length === 0 ? 0 : aVal.signum;
 
   return new redscale.BigInteger( rSig, rMag );
@@ -322,7 +331,7 @@ redscale.BigInteger.divideRem = function( aVal, bVal ) {
       rMag,
       quotRem;
 
-  quotRem = redscale.magnitude.divide( aVal.magnitude, bVal.magnitude );
+  quotRem = redscale.divide( aVal.magnitude, bVal.magnitude );
   qMag = quotRem[0];
   qSig = qMag.length === 0 ? 0 :
          aVal.signum === bVal.signum ? 1 : -1;
@@ -345,9 +354,20 @@ redscale.BigInteger.gcd = function( aVal, bVal ) {
   if ( aVal.signum === 0 ) { return bVal.abs() }
   if ( bVal.signum === 0 ) { return aVal.abs() }
 
-  gMag = redscale.magnitude.gcd( aVal.magnitude, bVal.magnitude );
+  gMag = redscale.gcd( aVal.magnitude, bVal.magnitude );
 
   return new redscale.BigInteger( 1, gMag );
+};
+
+/**
+ * Equals - Retruns a boolean representing whether aVal and bVal are equal.
+ * @param {redscale.BigInteger} aVal
+ * @param {redscale.BigInteger} bVal
+ * @returns {boolean}
+ */
+redscale.BigInteger.equals = function( aVal, bVal ) {
+  return (redscale.compare( aVal.magnitude, bVal.magnitude ) === 0) &&
+         aVal.signum === bVal.signum;
 };
 
 /**
@@ -371,7 +391,7 @@ redscale.BigInteger.fromString = function( aStr, radix ) {
   if ( leadingZeroes === null ) { leadingZeroes = [""]; }
   if ( leadingZeroes[0].length === aStrMag.length ) { return redscale.BigInteger.ZERO() }
 
-  aMag = redscale.magnitude.fromString( aStrMag[0].slice( leadingZeroes[0].length ), aRadix );
+  aMag = redscale.fromString( aStrMag[0].slice( leadingZeroes[0].length ), aRadix );
   aSig = aStr.indexOf( "-" ) === 0 ? -1 : 1;
 
   return new redscale.BigInteger( aSig, aMag );
@@ -385,7 +405,7 @@ redscale.BigInteger.fromString = function( aStr, radix ) {
  */
 redscale.BigInteger.fromNumber = function( aNum ) {
   var aSig = aNum === 0 ? 0 : aNum > 0 ? 1 : -1,
-      aMag = redscale.magnitude.fromNumber( aNum * aSig );
+      aMag = redscale.fromNumber( aNum * aSig );
 
   return new redscale.BigInteger( aSig, aMag );
 };
