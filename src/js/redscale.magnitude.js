@@ -432,23 +432,36 @@ redscale.multiplyKaratsuba = function( aArray, aLen, bArray, bLen ) {
       prodLow,
       prodHighLow;
 
-  var highNums = function( aArray, aLen, kLen ) {
+  var highNum = function( aArray, aLen, kLen ) {
+    var highArray;
 
+    if ( aLen <= kLen ) { return new Int16Array( 0 ); }
+
+    highArray = new Int16Array( aLen - kLen );
+    redscale.copy( aArray, kLen, highArray, 0, aLen - kLen );
+
+    return highArray;
   };
 
-  var lowNums = function( aArray, aLen, kLen ) {
+  var lowNum = function( aArray, aLen, kLen ) {
+    var lowArray;
 
+    if ( aLen <= kLen) { return aArray; }
+
+    lowArray = new Int16Array( kLen );
+    redscale.copy( aArray, 0, lowArray, 0, kLen );
+
+    return redscale.trimLeadingZeroes( lowArray );
   };
 
-  aHigh = highNums( aArray, aLen, kLen );
-  aLow = lowNums( aArray, aLen, kLen );
-  bHigh = highNums( bArray, bLen, kLen );
-  bLow = lowNums( bArray, bLen, kLen );
+  aHigh = highNum( aArray, aLen, kLen );
+  aLow = lowNum( aArray, aLen, kLen );
+  bHigh = highNum( bArray, bLen, kLen );
+  bLow = lowNum( bArray, bLen, kLen );
 
   prodHigh = redscale.multiply( aHigh, bHigh );
   prodLow = redscale.multiply( aLow, bLow );
-  prodHighLow = redscale.multiply( redscale.add( aHigh, aLow ),
-                                             redscale.add( bHigh, bLow ) );
+  prodHighLow = redscale.multiply( redscale.add( aHigh, aLow ), redscale.add( bHigh, bLow ) );
 
   return redscale.add(
            redscale.bitShiftLeft(
@@ -699,8 +712,8 @@ redscale.square = function( aArray ) {
     aVal = aArray[aIndex] & redscale.INT16_MASK;
     prod = aVal * aVal;
     pArray[pIndex++] = (prod >>> 1) & redscale.INT16_MASK;
-    pArray[pIndex++] = ((prod >>> 17) & redscale.INT16_MASK) | carry;
-    carry = prod << 31;
+    pArray[pIndex++] = ((prod >>> 17) | carry) & redscale.INT16_MASK;
+    carry = prod << 15;
   }
 
   for ( aIndex = 0, pIndex = 1; aIndex < aLen - 1; aIndex++, pIndex += 2 ) {
@@ -711,6 +724,37 @@ redscale.square = function( aArray ) {
   pArray[0] |= aArray[0] & 1;
 
   return pArray;
+};
+
+/**
+ * Power - Returns an array representing aArray raised to the power of expoNum.
+ * @param {!Int16Array} aArray
+ * @param {number} expoNum
+ * @returns {!Int16Array}
+ */
+redscale.pow = function( aArray, expoNum ) {
+  var aZero = redscale.numberTrailingZeroes( aArray ),
+      aNorm = redscale.bitShiftRight( aArray, aZero ),
+      expoCount = expoNum,
+      rArray;
+
+  if ( aNorm.length === 1 && aNorm[0] === 1 ) { return redscale.bitShiftRight( aNorm, aZero * expoNum ); }
+
+  rArray = new Int16Array([1]);
+
+  while ( expoCount ) {
+    if ( (expoCount & 1) === 1 ) {
+      rArray = redscale.multiply( rArray, aNorm );
+      expoCount >>>= 1;
+    } else {
+      aNorm = redscale.square( aNorm );
+      expoCount >>>= 1;
+    }
+  }
+
+  if ( aZero ) { rArray = redscale.bitShiftLeft( rArray, aZero, 0 ) }
+
+  return rArray;
 };
 
 /**
@@ -736,9 +780,9 @@ redscale.toInt32 = function( aArray ) {
  */
 redscale.toString = function( aSigNum, aArray, radix ) {
   var aRadix = (2 <= radix && radix <= 36) ? radix : 10,
+      aString = "",
       dArray = redscale.RADIX_DIVISOR32_INDEX[aRadix],
       remLen = redscale.RADIX_INT32_INDEX[aRadix],
-      aString = "",
       quotRem = redscale.divide( aArray, dArray ),
       strVal = redscale.toInt32( quotRem[1] ).toString( aRadix );
 
