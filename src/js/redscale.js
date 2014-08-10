@@ -640,36 +640,6 @@ redscale.divide = function( nArray, dArray ) {
 };
 
 /**
- * Mod
- * @param {!Int16Array} aArray
- * @param {!Int16Array} bArray
- * @returns {!Int16Array}
- */
-redscale.mod = function( aArray, bArray ) {
-  return redscale.divide( aArray, bArray )[1];
-};
-
-/**
- * Mod Pow Binary
- * @param {!Int16Array} aArray
- * @param {!number} aExpo
- * @param {!Int16Array} aMod
- * @returns {!Int16Array}
- */
-redscale.modPowBinary = function( aArray, aExpo, aMod ) {
-  var mArray = new Int16Array( [1] );
-
-  while ( aExpo ) {
-    if ( (aExpo & 1) === 1 ) { mArray = redscale.mod( redscale.multiply( aArray, mArray ), aMod ); }
-
-    aExpo >>>= 1;
-    aArray = redscale.mod( redscale.square( aArray ), aMod );
-  }
-
-  return mArray;
-};
-
-/**
  * Binary GCD - Returns an array representing the GCD.
  * @param {!Int16Array} aArray
  * @param {!Int16Array} bArray
@@ -815,6 +785,44 @@ redscale.pow = function( aArray, expoNum ) {
   if ( aZero ) { rArray = redscale.bitShiftLeft( rArray, aZero, 0 ) }
 
   return rArray;
+};
+
+/**
+ * Mod
+ * @param {!Int16Array} aArray
+ * @param {!number} aSign
+ * @param {!Int16Array} bArray
+ * @returns {!Int16Array}
+ */
+redscale.mod = function( aArray, aSign, bArray ) {
+  var rArray = redscale.divide( aArray, bArray )[1],
+      rSign = redscale.isZero( rArray ) ? 0 : aSign;
+
+  if (rSign === -1 ) {
+    rArray = redscale.subtract( bArray, rArray );
+  }
+
+  return rArray;
+};
+
+/**
+ * Mod Pow Binary
+ * @param {!Int16Array} aArray
+ * @param {!number} aExpo
+ * @param {!Int16Array} aMod
+ * @returns {!Int16Array}
+ */
+redscale.modPowBinary = function( aArray, aExpo, aMod ) {
+  var mArray = new Int16Array( [1] );
+
+  while ( aExpo ) {
+    if ( (aExpo & 1) === 1 ) { mArray = redscale.mod( redscale.multiply( aArray, mArray ), 1, aMod ); }
+
+    aExpo >>>= 1;
+    aArray = redscale.mod( redscale.square( aArray ), 1, aMod );
+  }
+
+  return mArray;
 };
 
 /**

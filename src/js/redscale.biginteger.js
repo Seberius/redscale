@@ -202,47 +202,12 @@ redscale.BigInteger.ONE = function() {
  */
 redscale.BigInteger.add = function( aVal, bVal ) {
   var abComp,
-      dSig,
-      dMag;
-
-  if ( aVal.signum === 0 ) { return bVal; }
-  if ( bVal.signum === 0 ) { return aVal; }
-  if ( aVal.signum === bVal.signum ) {
-    dSig = aVal.signum;
-    dMag = redscale.add( aVal.magnitude, bVal.magnitude );
-  } else {
-    abComp = redscale.compare( aVal.magnitude, bVal.magnitude );
-
-    if ( abComp === 0 ) {
-      dSig = 0;
-      dMag = new Int16Array( 0 );
-    } else if ( abComp > 0 ) {
-      dSig = abComp === aVal.signum ? 1 : -1;
-      dMag = redscale.subtract( aVal.magnitude, bVal.magnitude );
-    } else {
-      dSig = abComp === aVal.signum ? 1 : -1;
-      dMag = redscale.subtract( bVal.magnitude, aVal.magnitude );
-    }
-  }
-
-  return new redscale.BigInteger( dSig, dMag );
-};
-
-/**
- * Subtract - Returns BigInteger representation of the difference.
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} bVal
- * @returns {!redscale.BigInteger}
- * @export
- */
-redscale.BigInteger.subtract = function( aVal, bVal ) {
-  var abComp,
       sSig,
       sMag;
 
   if ( aVal.signum === 0 ) { return bVal; }
   if ( bVal.signum === 0 ) { return aVal; }
-  if ( aVal.signum !== bVal.signum ) {
+  if ( aVal.signum === bVal.signum ) {
     sSig = aVal.signum;
     sMag = redscale.add( aVal.magnitude, bVal.magnitude );
   } else {
@@ -261,6 +226,41 @@ redscale.BigInteger.subtract = function( aVal, bVal ) {
   }
 
   return new redscale.BigInteger( sSig, sMag );
+};
+
+/**
+ * Subtract - Returns BigInteger representation of the difference.
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.subtract = function( aVal, bVal ) {
+  var abComp,
+      dSig,
+      dMag;
+
+  if ( aVal.signum === 0 ) { return bVal; }
+  if ( bVal.signum === 0 ) { return aVal; }
+  if ( aVal.signum !== bVal.signum ) {
+    dSig = aVal.signum;
+    dMag = redscale.add( aVal.magnitude, bVal.magnitude );
+  } else {
+    abComp = redscale.compare( aVal.magnitude, bVal.magnitude );
+
+    if ( abComp === 0 ) {
+      dSig = 0;
+      dMag = new Int16Array( 0 );
+    } else if ( abComp > 0 ) {
+      dSig = abComp === aVal.signum ? 1 : -1;
+      dMag = redscale.subtract( aVal.magnitude, bVal.magnitude );
+    } else {
+      dSig = abComp === aVal.signum ? 1 : -1;
+      dMag = redscale.subtract( bVal.magnitude, aVal.magnitude );
+    }
+  }
+
+  return new redscale.BigInteger( dSig, dMag );
 };
 
 /**
