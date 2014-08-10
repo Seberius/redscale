@@ -154,15 +154,15 @@ redscale.intLeadingZeroes = function( aNum ) {
   aNum &= redscale.INT16_MASK;
   if ( aNum === 0 ) { return 16; }
   if ( aNum <= 0x00FF ) {
-    aNum = aNum << 8;
+    aNum <<= 8;
     zeroCount += 8;
   }
   if ( aNum <= 0x0FFF ) {
-    aNum = aNum << 4;
+    aNum <<= 4;
     zeroCount += 4;
   }
   if ( aNum <= 0x3FFF ) {
-    aNum = aNum << 2;
+    aNum <<= 2;
     zeroCount += 2;
   }
   if ( aNum <= 0x7FFF ) {
@@ -178,7 +178,27 @@ redscale.intLeadingZeroes = function( aNum ) {
  * @returns {number}
  */
 redscale.intTrailingZeroes = function( aNum ) {
-  return 16 - redscale.intLeadingZeroes( (~ aNum) & (aNum - 1) );
+  var zeroCount = 0;
+
+  aNum &= redscale.INT16_MASK;
+  if ( aNum === 0 ) { return 16; }
+  if ( (aNum & 0xFF) === 0 ) {
+    aNum >>>= 8;
+    zeroCount += 8;
+  }
+  if ( (aNum & 0xF) === 0 ) {
+    aNum >>>= 4;
+    zeroCount += 4;
+  }
+  if ( (aNum & 0x3) === 0 ) {
+    aNum >>>= 2;
+    zeroCount += 2;
+  }
+  if ( (aNum & 0x1) === 0 ) {
+    zeroCount += 1;
+  }
+
+  return zeroCount;
 };
 
 /**
@@ -620,6 +640,36 @@ redscale.divide = function( nArray, dArray ) {
 };
 
 /**
+ * Mod
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} bArray
+ * @returns {!Int16Array}
+ */
+redscale.mod = function( aArray, bArray ) {
+  return redscale.divide( aArray, bArray )[1];
+};
+
+/**
+ * Mod Pow Binary
+ * @param {!Int16Array} aArray
+ * @param {!number} aExpo
+ * @param {!Int16Array} aMod
+ * @returns {!Int16Array}
+ */
+redscale.modPowBinary = function( aArray, aExpo, aMod ) {
+  var mArray = new Int16Array( [1] );
+
+  while ( aExpo ) {
+    if ( (aExpo & 1) === 1 ) { mArray = redscale.mod( redscale.multiply( aArray, mArray ), aMod ); }
+
+    aExpo >>>= 1;
+    aArray = redscale.mod( redscale.square( aArray ), aMod );
+  }
+
+  return mArray;
+};
+
+/**
  * Binary GCD - Returns an array representing the GCD.
  * @param {!Int16Array} aArray
  * @param {!Int16Array} bArray
@@ -656,7 +706,7 @@ redscale.binaryGCD = function( aArray, bArray ) {
 };
 
 /**
- * GCD = Returns an array representing the GCD.
+ * GCD - Returns an array representing the GCD.
  * @param {!Int16Array} aArray
  * @param {!Int16Array} bArray
  * @returns {!Int16Array}
@@ -673,6 +723,16 @@ redscale.gcd = function( aArray, bArray ) {
   if ( redscale.isZero( bArray ) ) { return aArray; }
 
   return redscale.binaryGCD( aArray, bArray );
+};
+
+/**
+ * Lowest Common Multiple
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} bArray
+ * @returns {!Int16Array}
+ */
+redscale.lcm = function( aArray, bArray ) {
+  return redscale.multiply( redscale.divide( redscale.gcd( aArray, bArray ), aArray)[0], bArray );
 };
 
 /**
