@@ -18,31 +18,33 @@ redscale.SignArray = function( sign, array ) {
  * @returns {!redscale.SignArray}
  */
 redscale.SignArray.signAdd = function( aArray, bArray ) {
-  var abComp,
-      sSign,
-      sArray;
+  var abComp;
 
-  if ( aArray.sign === 0 ) { return bArray; }
+  if ( aArray.sign === 0 ) {
+    aArray.sign = bArray.sign;
+    aArray.array = redscale.copy( bArray, 0, new Int16Array( bArray.array.length ), 0, bArray.array.length );
+
+    return bArray;
+  }
   if ( bArray.sign === 0 ) { return aArray; }
   if ( aArray.sign === bArray.sign ) {
-    sSign = aArray.sign;
-    sArray = redscale.add( aArray.array, bArray.array );
+    aArray.array = redscale.add( aArray.array, bArray.array );
   } else {
     abComp = redscale.compare( aArray.array, bArray.array );
 
     if ( abComp === 0 ) {
-      sSign = 0;
-      sArray = new Int16Array( 0 );
+      aArray.sign = 0;
+      aArray.array = new Int16Array( 0 );
     } else if ( abComp > 0 ) {
-      sSign = abComp === aArray.sign ? 1 : -1;
-      sArray = redscale.subtract( aArray.array, bArray.array );
+      aArray.sign = abComp === aArray.sign ? 1 : -1;
+      aArray.array = redscale.subtract( aArray.array, bArray.array );
     } else {
-      sSign = abComp === aArray.sign ? 1 : -1;
-      sArray = redscale.subtract( bArray.array, aArray.array );
+      aArray.sign = abComp === aArray.sign ? 1 : -1;
+      aArray.array = redscale.subtract( bArray.array, aArray.array );
     }
   }
 
-  return new redscale.SignArray( sSign, sArray );
+  return aArray;
 };
 
 /**
@@ -52,29 +54,31 @@ redscale.SignArray.signAdd = function( aArray, bArray ) {
  * @returns {!redscale.SignArray}
  */
 redscale.SignArray.signSubtract = function( aArray, bArray ) {
-  var abComp,
-      dSign,
-      dArray;
+  var abComp;
 
-  if ( aArray.array === 0 ) { return bArray; }
-  if ( bArray.array === 0 ) { return aArray; }
-  if ( aArray.array !== bArray.array ) {
-    dSign = aArray.sign;
-    dArray = redscale.add( aArray.array, bArray.array );
+  if ( aArray.sign === 0 ) {
+    aArray.sign = bArray.sign * -1;
+    aArray.array = redscale.copy( bArray, 0, new Int16Array( bArray.array.length ), 0, bArray.array.length );
+
+    return aArray;
+  }
+  if ( bArray.sign === 0 ) { return aArray; }
+  if ( aArray.sign !== bArray.sign ) {
+    aArray.array = redscale.add( aArray.array, bArray.array );
   } else {
     abComp = redscale.compare( aArray.array, bArray.array );
 
     if ( abComp === 0 ) {
-      dSign = 0;
-      dArray = new Int16Array( 0 );
+      aArray.sign = 0;
+      aArray.array = new Int16Array( 0 );
     } else if ( abComp > 0 ) {
-      dSign = abComp === aArray.sign ? 1 : -1;
-      dArray = redscale.subtract( aArray.array, bArray.array );
+      aArray.sign = abComp === aArray.sign ? 1 : -1;
+      aArray.array = redscale.subtract( aArray.array, bArray.array );
     } else {
-      dSign = abComp === aArray.sign ? 1 : -1;
-      dArray = redscale.subtract( bArray.array, aArray.array );
+      aArray.sign = abComp === aArray.sign ? 1 : -1;
+      aArray.array = redscale.subtract( bArray.array, aArray.array );
     }
   }
 
-  return new redscale.SignArray( dSign, dArray );
+  return aArray;
 };
