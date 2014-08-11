@@ -22,7 +22,7 @@ redscale.SignArray.signAdd = function( aArray, bArray ) {
 
   if ( aArray.sign === 0 ) {
     aArray.sign = bArray.sign;
-    aArray.array = redscale.copy( bArray, 0, new Int16Array( bArray.array.length ), 0, bArray.array.length );
+    aArray.array = redscale.copy( bArray.array, 0, new Int16Array( bArray.array.length ), 0, bArray.array.length );
 
     return bArray;
   }
@@ -58,7 +58,7 @@ redscale.SignArray.signSubtract = function( aArray, bArray ) {
 
   if ( aArray.sign === 0 ) {
     aArray.sign = bArray.sign * -1;
-    aArray.array = redscale.copy( bArray, 0, new Int16Array( bArray.array.length ), 0, bArray.array.length );
+    aArray.array = redscale.copy( bArray.array, 0, new Int16Array( bArray.array.length ), 0, bArray.array.length );
 
     return aArray;
   }

@@ -806,6 +806,62 @@ redscale.mod = function( aArray, aSign, bArray ) {
 };
 
 /**
+ * Mod Inverse
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} mArray
+ * @returns {!Int16Array}
+ */
+redscale.modInverse = function( aArray, mArray ) {
+  var shiftNum = Math.max( redscale.numberTrailingZeroes( aArray ), redscale.numberTrailingZeroes( mArray ) ),
+      mNorm = redscale.bitShiftRight( mArray, shiftNum ),
+      aNorm = redscale.bitShiftRight( aArray, shiftNum ),
+      mArraySign = new redscale.SignArray( 1, mArray ),
+      aArraySign = new redscale.SignArray( 1, aArray ),
+      bVal = new redscale.SignArray( 0, new Int16Array( 0 ) ),
+      dVal = new redscale.SignArray( 1, new Int16Array( [1] ) );
+
+  while( !redscale.isZero( mArray ) ) {
+    while ( redscale.isEven( mNorm ) ) {
+      mNorm = redscale.bitShiftRight( mNorm, 1 );
+
+      if ( redscale.isOdd( bVal.array ) ) {
+        bVal = redscale.SignArray.signSubtract( bVal, mArraySign );
+      }
+
+      bVal.array = redscale.bitShiftRight( bVal.array, 1 );
+
+      if ( !bVal.array.length ) {
+        bVal.sign = 0;
+      }
+    }
+
+    while ( redscale.isEven( aNorm ) ) {
+      aNorm = redscale.bitShiftRight( aNorm, 1 );
+
+      if ( redscale.isOdd( dVal.array ) ) {
+        dVal = redscale.SignArray.signSubtract( dVal, aArraySign );
+      }
+
+      dVal.array = redscale.bitShiftRight( dVal.array, 1 );
+
+      if ( !dVal.array.length ) {
+        dVal.sign = 0;
+      }
+    }
+
+    if ( redscale.compare( mNorm, aNorm ) >= 0 ) {
+      mNorm = redscale.subtract( mNorm, aNorm );
+      bVal = redscale.SignArray.signSubtract( bVal, dVal );
+    } else {
+      aNorm = redscale.subtract( aNorm, mNorm );
+      bVal = redscale.SignArray.signSubtract( dVal, bVal );
+    }
+  }
+
+  return dVal.array;
+};
+
+/**
  * Mod Pow Binary
  * @param {!Int16Array} aArray
  * @param {!number} aExpo
