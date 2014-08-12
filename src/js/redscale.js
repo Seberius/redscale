@@ -204,13 +204,13 @@ redscale.intTrailingZeroes = function( aNum ) {
 /**
  * Array Leading Zeroes - Counts the number of zeroes from the most significant bit to the first "on" bit.
  * @param {Int16Array} aArray
- * @param {number} aLen
  * @returns {number}
  */
-redscale.numberLeadingZeroes = function( aArray, aLen ) {
-  var aIndex;
+redscale.numberLeadingZeroes = function( aArray ) {
+  var aLen = aArray.length,
+      aIndex;
 
-  for ( aIndex = aLen - 1; (aIndex >= 0) && (aArray[aIndex] === 0); aIndex-- ) { }
+  for ( aIndex = aLen - 1; (aIndex > 0) && (aArray[aIndex] === 0); aIndex-- ) { }
 
   return ((aLen - 1 - aIndex) << 4) + redscale.intLeadingZeroes( aArray[aIndex] );
 };
@@ -264,8 +264,9 @@ redscale.bitShiftLeft = function( srcArray, leftShift, padZeroes ) {
       intShift = leftShift >>> 4,
       leftBitShift = leftShift & 0xF,
       rightBitShift = 16 - leftBitShift,
-      extraZeroes = redscale.numberLeadingZeroes( srcArray, srcLen) >>> 4,
-      tarLen = srcLen + intShift - extraZeroes + padZeroes,
+      leadingZeroes = redscale.numberLeadingZeroes( srcArray ),
+      extraShift = (15 + leftBitShift - (leadingZeroes & 0xF)) >>> 4,
+      tarLen = srcLen + intShift + extraShift - (leadingZeroes >>> 4) + padZeroes,
       tarArray = new Int16Array(tarLen),
       carry = 0,
       srcIndex,
@@ -294,7 +295,7 @@ redscale.bitShiftLeft = function( srcArray, leftShift, padZeroes ) {
  */
 redscale.bitShiftRight = function( srcArray, rightShift ) {
   var srcLen = srcArray.length,
-      leadingZeroes = redscale.numberLeadingZeroes( srcArray, srcLen ),
+      leadingZeroes = redscale.numberLeadingZeroes( srcArray ),
       intShift = rightShift >>> 4,
       rightBitShift = rightShift & 0xF,
       leftBitShift = 16 - rightBitShift,
@@ -721,6 +722,8 @@ redscale.square = function( aArray ) {
       aIndex,
       pIndex;
 
+  if ( redscale.isZero( aArray ) ) { return new Int16Array( 0 ); }
+
   if ( aLen > 120 ) { return redscale.squareKaratsuba( aArray, aLen ) }
 
   var multiplyAddAdd = function( pArray, pIndex, aArray, aIndex, aLen ) {
@@ -759,6 +762,12 @@ redscale.square = function( aArray ) {
   return pArray;
 };
 
+/**
+ * Square:Karatsuba
+ * @param {!Int16Array} aArray
+ * @param {!number} aLen
+ * @returns {!Int16Array}
+ */
 redscale.squareKaratsuba = function( aArray, aLen ) {
   var kLen = (aLen + 1) >>> 1,
       aHigh,
@@ -855,11 +864,9 @@ redscale.mod = function( aArray, aSign, bArray ) {
  * @returns {!Int16Array}
  */
 redscale.modInverse = function( aArray, mArray ) {
-  var shiftNum = Math.max( redscale.numberTrailingZeroes( aArray ), redscale.numberTrailingZeroes( mArray ) ),
-      mNorm = redscale.bitShiftRight( mArray, shiftNum ),
-      aNorm = redscale.bitShiftRight( aArray, shiftNum ),
-      mArraySign = new redscale.SignArray( 1, mArray ),
-      aArraySign = new redscale.SignArray( 1, aArray ),
+  var mNorm = new Int16Array( mArray ),
+      aNorm = new Int16Array( aArray ),
+      mSigned = new redscale.SignArray( 1, mArray ),
       bVal = new redscale.SignArray( 0, new Int16Array( 0 ) ),
       dVal = new redscale.SignArray( 1, new Int16Array( [1] ) );
 
@@ -868,7 +875,7 @@ redscale.modInverse = function( aArray, mArray ) {
       mNorm = redscale.bitShiftRight( mNorm, 1 );
 
       if ( redscale.isOdd( bVal.array ) ) {
-        bVal = redscale.SignArray.signSubtract( bVal, mArraySign );
+        bVal = redscale.SignArray.signSubtract( bVal, mSigned );
       }
 
       bVal.array = redscale.bitShiftRight( bVal.array, 1 );
@@ -882,7 +889,7 @@ redscale.modInverse = function( aArray, mArray ) {
       aNorm = redscale.bitShiftRight( aNorm, 1 );
 
       if ( redscale.isOdd( dVal.array ) ) {
-        dVal = redscale.SignArray.signSubtract( dVal, aArraySign );
+        dVal = redscale.SignArray.signSubtract( dVal, mSigned );
       }
 
       dVal.array = redscale.bitShiftRight( dVal.array, 1 );
@@ -901,23 +908,25 @@ redscale.modInverse = function( aArray, mArray ) {
     }
   }
 
+  if ( dVal.sign < 0 ) { redscale.SignArray.signAdd( dVal, mSigned ) }
+
   return dVal.array;
 };
 
 /**
  * Mod Pow Binary
  * @param {!Int16Array} aArray
- * @param {!number} aExpo
+ * @param {!Int16Array} aExpo
  * @param {!Int16Array} aMod
  * @returns {!Int16Array}
  */
 redscale.modPowBinary = function( aArray, aExpo, aMod ) {
   var mArray = new Int16Array( [1] );
 
-  while ( aExpo ) {
-    if ( (aExpo & 1) === 1 ) { mArray = redscale.mod( redscale.multiply( aArray, mArray ), 1, aMod ); }
+  while ( !redscale.isZero( aExpo ) ) {
+    if ( redscale.isOdd( aExpo ) ) { mArray = redscale.mod( redscale.multiply( aArray, mArray ), 1, aMod ); }
 
-    aExpo >>>= 1;
+    aExpo = redscale.bitShiftRight( aExpo, 1 );
     aArray = redscale.mod( redscale.square( aArray ), 1, aMod );
   }
 
@@ -1015,7 +1024,7 @@ redscale.fromString = function( aString, radix ) {
   for ( aStrIndex += aStrSlice; aStrIndex < aStrLen; aStrIndex += radixLen ) {
     aVal = parseInt( aString.slice( aStrIndex, aStrIndex + radixLen ), radix );
 
-    if ( aVal.isNaN() ) { throw new Error( "RedScale: Is not a number." ) }
+    if ( Number.isNaN( aVal ) ) { throw new Error( "RedScale: Is not a number." ) }
 
     carry = 0;
 

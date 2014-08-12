@@ -126,6 +126,26 @@ redscale.BigInteger.prototype.pow = function( aNum ) {
 };
 
 /**
+ * Mod
+ * @param {!redscale.BigInteger} mVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.prototype.mod = function( mVal ) {
+  return redscale.BigInteger.mod( this, mVal );
+};
+
+/**
+ * Mod Inverse
+ * @param  {!redscale.BigInteger} mVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.prototype.modInverse = function( mVal ) {
+  return redscale.BigInteger.modInverse( this, mVal );
+};
+
+/**
  * Equals - Returns a boolean value for whether this BigInteger is equal to bVal.
  * @param {!redscale.BigInteger} bVal
  * @returns {boolean}
@@ -413,6 +433,43 @@ redscale.BigInteger.pow = function( aVal, aNum ) {
 };
 
 /**
+ * Mod
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} mVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.mod = function( aVal, mVal ) {
+  var rMag,
+      rSig;
+
+  if ( mVal.signum !== 1 ) { throw new Error( "RedScale: Modulus not positive." ) }
+
+  rMag = redscale.mod( aVal.magnitude, aVal.signum, mVal.magnitude );
+  rSig = redscale.isZero( rMag ) ? 0 : 1;
+
+  return new redscale.BigInteger( rSig, rMag );
+};
+
+/**
+ * Mod Inverse
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} mVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.modInverse = function( aVal, mVal ) {
+  var rMag;
+
+  if ( mVal.signum !== 1 ) { throw new Error( "RedScale: Modulus not positive." ) }
+  if ( redscale.BigInteger.equals( mVal, redscale.BigInteger.ONE() ) ) { return redscale.BigInteger.ZERO() }
+
+  rMag = redscale.modInverse( aVal.magnitude, mVal.magnitude );
+
+  return new redscale.BigInteger( 1, rMag );
+};
+
+/**
  * Equals - Returns a boolean representing whether aVal and bVal are equal.
  * @param {!redscale.BigInteger} aVal
  * @param {!redscale.BigInteger} bVal
@@ -442,8 +499,8 @@ redscale.BigInteger.fromString = function( aStr, radix ) {
 
   leadingZeroes = aStr.match( /[0]+/ );
 
-  if ( leadingZeroes === null ) { leadingZeroes = [""]; }
-  if ( leadingZeroes[0].length === aStrMag.length ) { return redscale.BigInteger.ZERO() }
+  if ( leadingZeroes === null || leadingZeroes.index === 0 ) { leadingZeroes = [""]; }
+  if ( leadingZeroes[0].length === aStrMag[0].length ) { return redscale.BigInteger.ZERO() }
 
   aMag = redscale.fromString( aStrMag[0].slice( leadingZeroes[0].length ), aRadix );
   aSig = aStr.indexOf( "-" ) === 0 ? -1 : 1;
