@@ -411,7 +411,7 @@ redscale.multiply = function( aArray, bArray ) {
       pArray,
       aIndex;
 
-  if ( aLen > 50 && bLen > 50 ) { return redscale.multiplyKaratsuba( aArray, aLen, bArray, bLen )}
+  if ( aLen > 120 && bLen > 120 ) { return redscale.multiplyKaratsuba( aArray, aLen, bArray, bLen )}
 
   pArray = new Int16Array( aLen + bLen );
 
@@ -443,7 +443,7 @@ redscale.multiply = function( aArray, bArray ) {
  * @returns {Int16Array}
  */
 redscale.multiplyKaratsuba = function( aArray, aLen, bArray, bLen ) {
-  var kLen = ((Math.max( aLen, bLen ) + 1) / 2) | 0,
+  var kLen = (Math.max( aLen, bLen ) + 1) >>> 1,
       aHigh,
       aLow,
       bHigh,
@@ -509,7 +509,7 @@ redscale.divideBy1n = function( nArray, nLen, dArray ) {
       rem,
       nIndex;
 
-  if ( nArray.length === 1 ) {
+  if ( nLen === 1 ) {
     quot = ((nArray[0] & redscale.INT16_MASK) / (dArray[0] & redscale.INT16_MASK)) | 0;
     rem = (nArray[0] & redscale.INT16_MASK) % (dArray[0] & redscale.INT16_MASK);
 
@@ -721,6 +721,8 @@ redscale.square = function( aArray ) {
       aIndex,
       pIndex;
 
+  if ( aLen > 120 ) { return redscale.squareKaratsuba( aArray, aLen ) }
+
   var multiplyAddAdd = function( pArray, pIndex, aArray, aIndex, aLen ) {
     var aVal = aArray[aIndex++] & redscale.INT16_MASK,
         carry = 0,
@@ -755,6 +757,50 @@ redscale.square = function( aArray ) {
   pArray[0] |= aArray[0] & 1;
 
   return pArray;
+};
+
+redscale.squareKaratsuba = function( aArray, aLen ) {
+  var kLen = (aLen + 1) >>> 1,
+      aHigh,
+      aLow,
+      aHigh2,
+      aLow2;
+
+  var highNum = function( aArray, aLen, kLen ) {
+    var highArray;
+
+    if ( aLen <= kLen ) { return new Int16Array( 0 ); }
+
+    highArray = new Int16Array( aLen - kLen );
+    redscale.copy( aArray, kLen, highArray, 0, aLen - kLen );
+
+    return highArray;
+  };
+
+  var lowNum = function( aArray, aLen, kLen ) {
+    var lowArray;
+
+    if ( aLen <= kLen) { return aArray; }
+
+    lowArray = new Int16Array( kLen );
+    redscale.copy( aArray, 0, lowArray, 0, kLen );
+
+    return redscale.trimLeadingZeroes( lowArray );
+  };
+
+  aHigh = highNum( aArray, aLen, kLen );
+  aLow = lowNum( aArray, aLen, kLen );
+  aHigh2 = redscale.square( aHigh );
+  aLow2 = redscale.square( aLow );
+
+  return redscale.add(
+           redscale.bitShiftLeft(
+             redscale.add(
+               redscale.bitShiftLeft( aHigh2, kLen * 32, 0 ),
+               redscale.subtract(
+                 redscale.square( redscale.add( aHigh, aLow) ),
+                 redscale.add( aHigh2, aLow2 ))), kLen * 32, 0 ),
+           aLow2 );
 };
 
 /**
