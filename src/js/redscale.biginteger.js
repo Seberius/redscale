@@ -107,9 +107,29 @@ redscale.BigInteger.prototype.gcd = function( bVal ) {
 };
 
 /**
+ * Square
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.prototype.square = function() {
+  return redscale.BigInteger.square( this );
+};
+
+/**
+ * Power
+ * @param {!number} aNum
+ * @returns {!Int16Array}
+ * @export
+ */
+redscale.BigInteger.prototype.pow = function( aNum ) {
+  return redscale.BigInteger.pow( this, aNum );
+};
+
+/**
  * Equals - Returns a boolean value for whether this BigInteger is equal to bVal.
  * @param {!redscale.BigInteger} bVal
  * @returns {boolean}
+ * @export
  */
 redscale.BigInteger.prototype.equals = function( bVal ) {
   return redscale.BigInteger.equals( this, bVal );
@@ -360,13 +380,47 @@ redscale.BigInteger.gcd = function( aVal, bVal ) {
 };
 
 /**
- * Equals - Retruns a boolean representing whether aVal and bVal are equal.
- * @param {redscale.BigInteger} aVal
- * @param {redscale.BigInteger} bVal
- * @returns {boolean}
+ * Square
+ * @param {!redscale.BigInteger} aVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.square = function( aVal ) {
+  if ( aVal.signum === 0 ) { return aVal }
+
+  return new redscale.BigInteger( 1, redscale.square( aVal.magnitude ) );
+};
+
+/**
+ * Power
+ * @param {!redscale.BigInteger} aVal
+ * @param {!number} aNum
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.pow = function( aVal, aNum ) {
+  var pSign,
+      pArray;
+
+  if ( aNum < 0 ) { throw new Error( "Exponent is negative." ) }
+
+  if ( aVal.signum === 0 ) { return aNum === 0 ? redscale.BigInteger.ONE() : aVal }
+
+  pSign = aVal.signum < 0 && (aNum & 1) === 1 ? -1 : 1;
+  pArray = redscale.pow( aVal.magnitude, aNum );
+
+  return new redscale.BigInteger( pSign, pArray );
+};
+
+/**
+ * Equals - Returns a boolean representing whether aVal and bVal are equal.
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!boolean}
+ * @export
  */
 redscale.BigInteger.equals = function( aVal, bVal ) {
-  return (redscale.compare( aVal.magnitude, bVal.magnitude ) === 0) &&
+  return redscale.compare( aVal.magnitude, bVal.magnitude ) === 0 &&
          aVal.signum === bVal.signum;
 };
 
