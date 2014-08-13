@@ -146,6 +146,17 @@ redscale.BigInteger.prototype.modInverse = function( mVal ) {
 };
 
 /**
+ * Mod Power
+ * @param {!redscale.BigInteger} expoVal
+ * @param {!redscale.BigInteger} mVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.prototype.modPow = function( expoVal, mVal ) {
+  return redscale.BigInteger.modPow( this, expoVal, mVal );
+};
+
+/**
  * Equals - Returns a boolean value for whether this BigInteger is equal to bVal.
  * @param {!redscale.BigInteger} bVal
  * @returns {boolean}
@@ -464,9 +475,29 @@ redscale.BigInteger.modInverse = function( aVal, mVal ) {
   if ( mVal.signum !== 1 ) { throw new Error( "RedScale: Modulus not positive." ) }
   if ( redscale.BigInteger.equals( mVal, redscale.BigInteger.ONE() ) ) { return redscale.BigInteger.ZERO() }
 
-  rMag = redscale.modInverse( aVal.magnitude, mVal.magnitude );
+  rMag = redscale.modInverse( aVal.magnitude, aVal.signum, mVal.magnitude );
 
   return new redscale.BigInteger( 1, rMag );
+};
+
+/**
+ * Mod Power
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} expoVal
+ * @param {!redscale.BigInteger} mVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.modPow = function( aVal, expoVal, mVal ) {
+  var rMag,
+      rSig;
+
+  rMag = redscale.modPowBinary( aVal.magnitude, aVal.signum, expoVal.magnitude, mVal.magnitude );
+  rSig = 1;
+
+  console.log(rMag);
+
+  return new redscale.BigInteger( rSig, rMag );
 };
 
 /**

@@ -860,10 +860,11 @@ redscale.mod = function( aArray, aSign, bArray ) {
 /**
  * Mod Inverse
  * @param {!Int16Array} aArray
+ * @param {!number} aSign
  * @param {!Int16Array} mArray
  * @returns {!Int16Array}
  */
-redscale.modInverse = function( aArray, mArray ) {
+redscale.modInverse = function( aArray, aSign, mArray ) {
   var mNorm = new Int16Array( mArray ),
       aNorm = new Int16Array( aArray ),
       mSigned = new redscale.SignArray( 1, mArray ),
@@ -908,7 +909,11 @@ redscale.modInverse = function( aArray, mArray ) {
     }
   }
 
-  if ( dVal.sign < 0 ) { redscale.SignArray.signAdd( dVal, mSigned ) }
+  if ( dVal.sign < aSign ) {
+    redscale.SignArray.signAdd( dVal, mSigned );
+  } else if ( dVal.sign > aSign ) {
+    redscale.SignArray.signSubtract( dVal, mSigned );
+  }
 
   return dVal.array;
 };
@@ -916,11 +921,12 @@ redscale.modInverse = function( aArray, mArray ) {
 /**
  * Mod Pow Binary
  * @param {!Int16Array} aArray
+ * @param {!number} aSign
  * @param {!Int16Array} aExpo
  * @param {!Int16Array} aMod
  * @returns {!Int16Array}
  */
-redscale.modPowBinary = function( aArray, aExpo, aMod ) {
+redscale.modPowBinary = function( aArray, aSign, aExpo, aMod ) {
   var mArray = new Int16Array( [1] );
 
   while ( !redscale.isZero( aExpo ) ) {
@@ -929,6 +935,8 @@ redscale.modPowBinary = function( aArray, aExpo, aMod ) {
     aExpo = redscale.bitShiftRight( aExpo, 1 );
     aArray = redscale.mod( redscale.square( aArray ), 1, aMod );
   }
+
+  if ( aSign < 0 ) { mArray = redscale.subtract( aMod, mArray ); }
 
   return mArray;
 };
