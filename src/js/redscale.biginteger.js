@@ -499,7 +499,7 @@ redscale.BigInteger.fromString = function( aStr, radix ) {
 
   leadingZeroes = aStr.match( /[0]+/ );
 
-  if ( leadingZeroes === null || leadingZeroes.index === 0 ) { leadingZeroes = [""]; }
+  if ( leadingZeroes === null || leadingZeroes.index !== 0 ) { leadingZeroes = [""]; }
   if ( leadingZeroes[0].length === aStrMag[0].length ) { return redscale.BigInteger.ZERO() }
 
   aMag = redscale.fromString( aStrMag[0].slice( leadingZeroes[0].length ), aRadix );

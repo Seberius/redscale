@@ -805,10 +805,10 @@ redscale.squareKaratsuba = function( aArray, aLen ) {
   return redscale.add(
            redscale.bitShiftLeft(
              redscale.add(
-               redscale.bitShiftLeft( aHigh2, kLen * 32, 0 ),
+               redscale.bitShiftLeft( aHigh2, kLen * 16, 0 ),
                redscale.subtract(
                  redscale.square( redscale.add( aHigh, aLow) ),
-                 redscale.add( aHigh2, aLow2 ))), kLen * 32, 0 ),
+                 redscale.add( aHigh2, aLow2 ))), kLen * 16, 0 ),
            aLow2 );
 };
 
