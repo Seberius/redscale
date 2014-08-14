@@ -492,7 +492,7 @@ redscale.BigInteger.modPow = function( aVal, expoVal, mVal ) {
   var rMag,
       rSig;
 
-  rMag = redscale.modPowBinary( aVal.magnitude, aVal.signum, expoVal.magnitude, mVal.magnitude );
+  rMag = redscale.modPow( aVal.magnitude, aVal.signum, expoVal.magnitude, mVal.magnitude );
   rSig = 1;
 
   console.log(rMag);

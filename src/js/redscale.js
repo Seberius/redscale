@@ -919,6 +919,18 @@ redscale.modInverse = function( aArray, aSign, mArray ) {
 };
 
 /**
+ * Mod Pow
+ * @param {!Int16Array} aArray
+ * @param {!number} aSign
+ * @param {!Int16Array} aExpo
+ * @param {!Int16Array} aMod
+ * @returns {!Int16Array}
+ */
+redscale.modPow = function( aArray, aSign, aExpo, aMod ) {
+  return redscale.modPowBinary( aArray, aSign, aExpo, aMod );
+};
+
+/**
  * Mod Pow Binary
  * @param {!Int16Array} aArray
  * @param {!number} aSign
@@ -939,6 +951,36 @@ redscale.modPowBinary = function( aArray, aSign, aExpo, aMod ) {
   if ( aSign < 0 ) { mArray = redscale.subtract( aMod, mArray ); }
 
   return mArray;
+};
+
+/**
+ * Mod Pow Garner
+ * @param {!Int16Array} cryptArray
+ * @param {!Int16Array} nArray
+ * @param {!Int16Array} pArray
+ * @param {!Int16Array} qArray
+ * @param {!Int16Array} secPArray
+ * @param {!Int16Array} secQArray
+ * @param {!Int16Array} pInvArray
+ * @returns {!Int16Array}
+ */
+redscale.modPowGarner = function( cryptArray, nArray, pArray, qArray, secPArray, secQArray, pInvArray ) {
+  var cpArray = redscale.mod( cryptArray, 1, pArray ),
+      cqArray = redscale.mod( cryptArray, 1, qArray ),
+      mpArray = redscale.modPow( cpArray, 1, secPArray, pArray ),
+      mqArray = redscale.modPow( cqArray, 1, secQArray, qArray ),
+      mArray;
+
+  if ( redscale.compare( mpArray, mqArray ) !== -1 ) {
+    mArray = redscale.mod( redscale.subtract( mqArray, mpArray ), 1, qArray );
+  } else {
+    mArray = redscale.mod( redscale.subtract( redscale.add( mqArray, pArray ), mpArray ), 1, qArray );
+  }
+
+  mArray = redscale.mod( redscale.multiply( mArray, pInvArray ), 1, qArray );
+  mArray = redscale.mod( redscale.multiply( mArray, pArray ), 1, nArray );
+
+  return redscale.mod( redscale.add( mArray, mpArray ), 1, nArray );
 };
 
 /**
