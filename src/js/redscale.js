@@ -495,6 +495,10 @@ redscale.multiplyKaratsuba = function( aArray, aLen, bArray, bLen ) {
            prodLow );
 };
 
+redscale.multiplyBarrett = function( aArray, bArray ) {
+  return redscale.multiply( aArray, bArray );
+};
+
 /**
  * Divide array by 16bit integer - Returns an Array of Arrays representing the quotient and remainder.
  * @param {!Int16Array} nArray
@@ -852,6 +856,39 @@ redscale.mod = function( aArray, aSign, bArray ) {
 
   if (rSign === -1 ) {
     rArray = redscale.subtract( bArray, rArray );
+  }
+
+  return rArray;
+};
+
+/**
+ * Mod Barrett
+ * @param {!Int16Array} aArray
+ * @param {!number} aSign
+ * @param {!Int16Array} mArray
+ * @param {!Int16Array} uArray
+ * @returns {!Int16Array}
+ */
+redscale.modBarrett = function( aArray, aSign, mArray, uArray ) {
+  var mLen = mArray.length,
+      bArray = redscale.bitShiftLeft( redscale.BigInteger.ONE(), (mLen + 1) * 16, 0 ),
+      qArray,
+      rArray;
+
+  qArray = redscale.bitShiftRight( aArray, (mLen - 1) * 16 );
+  qArray = redscale.multiply( qArray, uArray );
+  qArray = redscale.bitShiftRight( qArray, (mLen + 1) * 16 );
+  qArray = redscale.mod( redscale.multiply( qArray, mArray ), 1, bArray );
+  rArray = redscale.mod( aArray, aSign, bArray );
+
+  if ( redscale.compare( rArray, qArray ) >= 0 ) {
+    rArray = redscale.subtract( rArray, qArray );
+  } else {
+    rArray = redscale.subtract( redscale.add( rArray, bArray ), qArray );
+  }
+
+  while ( redscale.compare( rArray, mArray ) !== -1 ) {
+    rArray = redscale.subtract( rArray, mArray );
   }
 
   return rArray;
