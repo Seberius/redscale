@@ -98,8 +98,8 @@ redscale.ZERO_STRING = '00000000000000000000000000000';
 
 /**
  * isZero
- * @param {Int16Array} aArray
- * @returns {boolean}
+ * @param {!Int16Array} aArray
+ * @returns {!boolean}
  */
 redscale.isZero = function( aArray ) {
   return aArray.length === 0;
@@ -107,8 +107,8 @@ redscale.isZero = function( aArray ) {
 
 /**
  * isOdd
- * @param {Int16Array} aArray
- * @returns {boolean}
+ * @param {!Int16Array} aArray
+ * @returns {!boolean}
  */
 redscale.isOdd = function( aArray ) {
   return ((aArray[0] || 0) & 1) === 1;
@@ -116,8 +116,8 @@ redscale.isOdd = function( aArray ) {
 
 /**
  * isEven
- * @param {Int16Array} aArray
- * @returns {boolean}
+ * @param {!Int16Array} aArray
+ * @returns {!boolean}
  */
 redscale.isEven = function( aArray ) {
   return ((aArray[0] || 0) & 1) === 0;
@@ -126,12 +126,12 @@ redscale.isEven = function( aArray ) {
 /**
  * Copy - Copies the value from one array to another. Require source array, source starting index,
  * target array, target starting index, and copy length.
- * @param {Int16Array} srcArray
- * @param {number} srcStart
- * @param {Int16Array} tarArray
- * @param {number} tarStart
- * @param {number} copyLength
- * @returns {Int16Array}
+ * @param {!Int16Array} srcArray
+ * @param {!number} srcStart
+ * @param {!Int16Array} tarArray
+ * @param {!number} tarStart
+ * @param {!number} copyLength
+ * @returns {!Int16Array}
  */
 redscale.copy = function( srcArray, srcStart, tarArray, tarStart, copyLength ) {
   var srcLimit = srcStart + copyLength;
@@ -145,8 +145,8 @@ redscale.copy = function( srcArray, srcStart, tarArray, tarStart, copyLength ) {
 
 /**
  * Integer Leading Zeroes - Counts the leading zeroes of a native number as if it were a signed 16-bit integer.
- * @param {number} aNum
- * @returns {number}
+ * @param {!number} aNum
+ * @returns {!number}
  */
 redscale.intLeadingZeroes = function( aNum ) {
   var zeroCount = 0;
@@ -174,8 +174,8 @@ redscale.intLeadingZeroes = function( aNum ) {
 
 /**
  * Integer Trailing Zeroes - Counts the trailing zeroes of a native number as if it were a signed 16-bit integer.
- * @param {number} aNum
- * @returns {number}
+ * @param {!number} aNum
+ * @returns {!number}
  */
 redscale.intTrailingZeroes = function( aNum ) {
   var zeroCount = 0;
@@ -203,8 +203,8 @@ redscale.intTrailingZeroes = function( aNum ) {
 
 /**
  * Array Leading Zeroes - Counts the number of zeroes from the most significant bit to the first "on" bit.
- * @param {Int16Array} aArray
- * @returns {number}
+ * @param {!Int16Array} aArray
+ * @returns {!number}
  */
 redscale.numberLeadingZeroes = function( aArray ) {
   var aLen = aArray.length,
@@ -233,8 +233,8 @@ redscale.numberTrailingZeroes = function( aArray ) {
  * Trim Leading Zeroes - Takes an array and removes leading zero integers.
  *     Returns source array if there aren't any leading zeroes.
  *     Returns an empty array if all zeroes.
- * @param {Int16Array} srcArray
- * @returns {Int16Array}
+ * @param {!Int16Array} srcArray
+ * @returns {!Int16Array}
  */
 redscale.trimLeadingZeroes = function( srcArray ) {
   var srcLen = srcArray.length,
@@ -495,10 +495,6 @@ redscale.multiplyKaratsuba = function( aArray, aLen, bArray, bLen ) {
            prodLow );
 };
 
-redscale.multiplyBarrett = function( aArray, bArray ) {
-  return redscale.multiply( aArray, bArray );
-};
-
 /**
  * Divide array by 16bit integer - Returns an Array of Arrays representing the quotient and remainder.
  * @param {!Int16Array} nArray
@@ -564,6 +560,15 @@ redscale.divideKnuth = function( nArray, nLen, dArray, dLen ) {
       qIndex,
       aIndex;
 
+  /**
+   * Multiply Subtract
+   * @param {!number} quot
+   * @param {!Int16Array} aArray
+   * @param {!Int16Array} bArray
+   * @param {!number} qIndex
+   * @param {!number} bLen
+   * @returns {!number}
+   */
   var divMulSub = function( quot, aArray, bArray, qIndex, bLen ) {
     var carry = 0,
         aIndex,
@@ -582,6 +587,14 @@ redscale.divideKnuth = function( nArray, nLen, dArray, dLen ) {
     return carry;
   };
 
+  /**
+   * Add
+   * @param {!Int16Array} aArray
+   * @param {!Int16Array} bArray
+   * @param {!number} qIndex
+   * @param {!number} bLen
+   * @returns {!number}
+   */
   var divAdd = function( aArray, bArray, qIndex, bLen ) {
     var
       carry = 0,
@@ -726,10 +739,15 @@ redscale.square = function( aArray ) {
       aIndex,
       pIndex;
 
-  if ( redscale.isZero( aArray ) ) { return new Int16Array( 0 ); }
-
-  if ( aLen > 120 ) { return redscale.squareKaratsuba( aArray, aLen ) }
-
+  /**
+   *
+   * @param {!Int16Array} pArray
+   * @param {!number} pIndex
+   * @param {!Int16Array} aArray
+   * @param {!number} aIndex
+   * @param {!number} aLen
+   * @returns {!number}
+   */
   var multiplyAddAdd = function( pArray, pIndex, aArray, aIndex, aLen ) {
     var aVal = aArray[aIndex++] & redscale.INT16_MASK,
         carry = 0,
@@ -746,7 +764,13 @@ redscale.square = function( aArray ) {
       pArray[pIndex++] = sum & redscale.INT16_MASK;
       carry = sum >>> 16;
     }
+
+    return carry;
   };
+
+  if ( redscale.isZero( aArray ) ) { return new Int16Array( 0 ); }
+
+  if ( aLen > 120 ) { return redscale.squareKaratsuba( aArray, aLen ) }
 
   for ( aIndex = aLen - 1, pIndex = pLen - 1; aIndex >= 0; aIndex-- ) {
     aVal = aArray[aIndex] & redscale.INT16_MASK;
@@ -875,11 +899,35 @@ redscale.modBarrett = function( aArray, aSign, mArray, uArray ) {
       qArray,
       rArray;
 
+  /**
+   * Partial Multiply
+   * @param {!Int16Array} aArray
+   * @param {!Int16Array} bArray
+   * @returns {!Int16Array}
+   */
+  var partialMultiply = function( aArray, bArray ) {
+    return redscale.multiply( aArray, bArray );
+  };
+
+  /**
+   * Mod Bit Strip
+   * @param {!Int16Array} nArray
+   * @param {!number} mLen
+   * @returns {!Int16Array}
+   */
+  var modBitStrip = function( nArray, mLen ) {
+    if ( nArray.length > mLen + 1 ) {
+      nArray = redscale.copy( nArray, 0, new Int16Array( mLen ), 0, mLen );
+    }
+
+    return nArray;
+  };
+
   qArray = redscale.bitShiftRight( aArray, (mLen - 1) * 16 );
-  qArray = redscale.multiply( qArray, uArray );
+  qArray = partialMultiply( qArray, uArray );
   qArray = redscale.bitShiftRight( qArray, (mLen + 1) * 16 );
-  qArray = redscale.mod( redscale.multiply( qArray, mArray ), 1, bArray );
-  rArray = redscale.mod( aArray, aSign, bArray );
+  qArray = modBitStrip( partialMultiply( qArray, mArray ), mLen );
+  rArray = modBitStrip( aArray, mLen );
 
   if ( redscale.compare( rArray, qArray ) >= 0 ) {
     rArray = redscale.subtract( rArray, qArray );
