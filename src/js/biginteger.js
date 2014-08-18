@@ -1,4 +1,4 @@
-goog.provide('redscale.BigInteger');
+goog.provide('BigInteger');
 
 /**
  * BigInteger type.
@@ -8,7 +8,7 @@ goog.provide('redscale.BigInteger');
  * @struct
  * @export
  */
-redscale.BigInteger = function( signum, magnitude ) {
+BigInteger = function( signum, magnitude ) {
   /** @type {string} */
   this.redscaleType = "BigInteger";
   this.signum = signum;
@@ -17,153 +17,153 @@ redscale.BigInteger = function( signum, magnitude ) {
 
 /**
  * Add - Returns a RedScale type representing the sum.
- * @param {!redscale.BigInteger|number} bVal - The RedScale type or number being added.
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger|number} bVal - The RedScale type or number being added.
+ * @returns {!BigInteger}
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.add = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.add( this, bVal ) :
-         typeof bVal === "number" ? redscale.BigInteger.add( this, redscale.BigInteger.fromNumber( bVal ) ) :
+BigInteger.prototype.add = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? BigInteger.add( this, bVal ) :
+         typeof bVal === "number" ? BigInteger.add( this, BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
 
 /**
  * Subtract - Returns a RedScale type representing the difference.
- * @param {!redscale.BigInteger|number} bVal - The RedScale type or number being subtracted.
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger|number} bVal - The RedScale type or number being subtracted.
+ * @returns {!BigInteger}
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.subtract = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.subtract( this, bVal ) :
-         typeof bVal === "number" ? redscale.BigInteger.subtract( this, redscale.BigInteger.fromNumber( bVal ) ) :
+BigInteger.prototype.subtract = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? BigInteger.subtract( this, bVal ) :
+         typeof bVal === "number" ? BigInteger.subtract( this, BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
 
 /**
  * Multiply - Returns a RedScale type representing the product.
- * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger|number} bVal - A RedScale type or number.
+ * @returns {!BigInteger}
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.multiply = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.multiply( this, bVal ) :
-         typeof bVal === "number" ? redscale.BigInteger.multiply( this, redscale.BigInteger.fromNumber( bVal ) ) :
+BigInteger.prototype.multiply = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? BigInteger.multiply( this, bVal ) :
+         typeof bVal === "number" ? BigInteger.multiply( this, BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
 
 /**
  * Divide:Quotient - Returns a RedScale type representing the quotient.
- * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger|number} bVal - A RedScale type or number.
+ * @returns {!BigInteger}
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.divide = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.divide( this, bVal ) :
-         typeof bVal === "number" ? redscale.BigInteger.divide( this, redscale.BigInteger.fromNumber( bVal ) ) :
+BigInteger.prototype.divide = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? BigInteger.divide( this, bVal ) :
+         typeof bVal === "number" ? BigInteger.divide( this, BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
 
 /**
  * Divide:Remainder - Returns a RedScale type representing the remainder.
- * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger|number} bVal - A RedScale type or number.
+ * @returns {!BigInteger}
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.remainder = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.remainder( this, bVal ) :
-         typeof bVal === "number" ? redscale.BigInteger.remainder( this, redscale.BigInteger.fromNumber( bVal ) ) :
+BigInteger.prototype.remainder = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? BigInteger.remainder( this, bVal ) :
+         typeof bVal === "number" ? BigInteger.remainder( this, BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
 
 /**
  * Divide - Returns an Array containing the RedScale types representing the quotient & remainder.
- * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
+ * @param {!BigInteger|number} bVal - A RedScale type or number.
  * @returns {!Int16Array[]}
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.divideRem = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.divideRem( this, bVal ) :
-         typeof bVal === "number" ? redscale.BigInteger.divideRem( this, redscale.BigInteger.fromNumber( bVal ) ) :
+BigInteger.prototype.divideRem = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? BigInteger.divideRem( this, bVal ) :
+         typeof bVal === "number" ? BigInteger.divideRem( this, BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
 
 /**
  * GCD - Returns an Array containing the RedScale types representing the GCD.
- * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger|number} bVal - A RedScale type or number.
+ * @returns {!BigInteger}
  * @throws {TypeError}
  * @export
  */
-redscale.BigInteger.prototype.gcd = function( bVal ) {
-  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.gcd( this, bVal ) :
-         typeof bVal === "number" ? redscale.BigInteger.gcd( this, redscale.BigInteger.fromNumber( bVal ) ) :
+BigInteger.prototype.gcd = function( bVal ) {
+  return bVal.redscaleType === "BigInteger" ? BigInteger.gcd( this, bVal ) :
+         typeof bVal === "number" ? BigInteger.gcd( this, BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
 
 /**
  * Square
- * @returns {!redscale.BigInteger}
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.prototype.square = function() {
-  return redscale.BigInteger.square( this );
+BigInteger.prototype.square = function() {
+  return BigInteger.square( this );
 };
 
 /**
  * Power
  * @param {!number} aNum
- * @returns {!Int16Array}
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.prototype.pow = function( aNum ) {
-  return redscale.BigInteger.pow( this, aNum );
+BigInteger.prototype.pow = function( aNum ) {
+  return BigInteger.pow( this, aNum );
 };
 
 /**
  * Mod
- * @param {!redscale.BigInteger} mVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} mVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.prototype.mod = function( mVal ) {
-  return redscale.BigInteger.mod( this, mVal );
+BigInteger.prototype.mod = function( mVal ) {
+  return BigInteger.mod( this, mVal );
 };
 
 /**
  * Mod Inverse
- * @param  {!redscale.BigInteger} mVal
- * @returns {!redscale.BigInteger}
+ * @param  {!BigInteger} mVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.prototype.modInverse = function( mVal ) {
-  return redscale.BigInteger.modInverse( this, mVal );
+BigInteger.prototype.modInverse = function( mVal ) {
+  return BigInteger.modInverse( this, mVal );
 };
 
 /**
  * Mod Power
- * @param {!redscale.BigInteger} expoVal
- * @param {!redscale.BigInteger} mVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} expoVal
+ * @param {!BigInteger} mVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.prototype.modPow = function( expoVal, mVal ) {
-  return redscale.BigInteger.modPow( this, expoVal, mVal );
+BigInteger.prototype.modPow = function( expoVal, mVal ) {
+  return BigInteger.modPow( this, expoVal, mVal );
 };
 
 /**
  * Equals - Returns a boolean value for whether this BigInteger is equal to bVal.
- * @param {!redscale.BigInteger} bVal
+ * @param {!BigInteger} bVal
  * @returns {boolean}
  * @export
  */
-redscale.BigInteger.prototype.equals = function( bVal ) {
-  return redscale.BigInteger.equals( this, bVal );
+BigInteger.prototype.equals = function( bVal ) {
+  return BigInteger.equals( this, bVal );
 };
 
 /**
@@ -173,7 +173,7 @@ redscale.BigInteger.prototype.equals = function( bVal ) {
  * @override
  * @export
  */
-redscale.BigInteger.prototype.toString = function( radix ) {
+BigInteger.prototype.toString = function( radix ) {
   return redscale.toString( this.signum, this.magnitude, radix );
 };
 
@@ -183,7 +183,7 @@ redscale.BigInteger.prototype.toString = function( radix ) {
  * @returns {!number}
  * @export
  */
-redscale.BigInteger.prototype.ofValue = function() {
+BigInteger.prototype.ofValue = function() {
   return redscale.toNumber( this.signum, this.magnitude );
 };
 
@@ -193,25 +193,25 @@ redscale.BigInteger.prototype.ofValue = function() {
  * @returns {!number}
  * @export
  */
-redscale.BigInteger.prototype.toNumber = function() {
+BigInteger.prototype.toNumber = function() {
   return redscale.toNumber( this.signum, this.magnitude );
 };
 
 /**
  * Negate - Returns the negation of the BigInteger
- * @returns {!redscale.BigInteger}
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.prototype.negate = function() {
-  return new redscale.BigInteger( this.signum * -1, this.magnitude );
+BigInteger.prototype.negate = function() {
+  return new BigInteger( this.signum * -1, this.magnitude );
 };
 
 /**
  * Absolute - Returns the absolute BigInteger.  Will return the current BigInteger if positive or zero.
- * @returns {!redscale.BigInteger}
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.prototype.abs = function() {
+BigInteger.prototype.abs = function() {
   return this.signum === -1 ? this.negate() : this;
 };
 
@@ -220,38 +220,38 @@ redscale.BigInteger.prototype.abs = function() {
  * @returns {!number}
  * @export
  */
-redscale.BigInteger.prototype.sign = function() {
+BigInteger.prototype.sign = function() {
   return this.signum;
 };
 
 /**
  * ZERO - Returns a BigInteger equal to 0.
- * @returns {!redscale.BigInteger}
+ * @returns {!BigInteger}
  * @constructor
  * @export
  */
-redscale.BigInteger.ZERO = function() {
-  return new redscale.BigInteger( 0, new Int16Array( 0 ) );
+BigInteger.ZERO = function() {
+  return new BigInteger( 0, new Int16Array( 0 ) );
 };
 
 /**
  * ONE - Returns a BigInteger equal to 1.
- * @returns {!redscale.BigInteger}
+ * @returns {!BigInteger}
  * @constructor
  * @export
  */
-redscale.BigInteger.ONE = function() {
-  return new redscale.BigInteger( 1, new Int16Array( [1] ) );
+BigInteger.ONE = function() {
+  return new BigInteger( 1, new Int16Array( [1] ) );
 };
 
 /**
  * Add - Returns BigInteger representation of the sum.
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} bVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} bVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.add = function( aVal, bVal ) {
+BigInteger.add = function( aVal, bVal ) {
   var abComp,
       sSig,
       sMag;
@@ -276,17 +276,17 @@ redscale.BigInteger.add = function( aVal, bVal ) {
     }
   }
 
-  return new redscale.BigInteger( sSig, sMag );
+  return new BigInteger( sSig, sMag );
 };
 
 /**
  * Subtract - Returns BigInteger representation of the difference.
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} bVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} bVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.subtract = function( aVal, bVal ) {
+BigInteger.subtract = function( aVal, bVal ) {
   var abComp,
       dSig,
       dMag;
@@ -311,36 +311,36 @@ redscale.BigInteger.subtract = function( aVal, bVal ) {
     }
   }
 
-  return new redscale.BigInteger( dSig, dMag );
+  return new BigInteger( dSig, dMag );
 };
 
 /**
  * Multiply - Returns BigInteger representation of the product.
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} bVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} bVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.multiply = function( aVal, bVal ) {
+BigInteger.multiply = function( aVal, bVal ) {
   var pSig,
       pMag;
 
-  if ( aVal.signum === 0 || bVal.signum === 0 ) { return new redscale.BigInteger( 0, new Int16Array( 0 ) ) }
+  if ( aVal.signum === 0 || bVal.signum === 0 ) { return new BigInteger( 0, new Int16Array( 0 ) ) }
 
   pSig = aVal.signum === bVal.signum ? 1 : -1;
   pMag = redscale.multiply( aVal.magnitude, bVal.magnitude );
 
-  return new redscale.BigInteger( pSig, pMag );
+  return new BigInteger( pSig, pMag );
 };
 
 /**
  * Divide:Quotient - Returns BigInteger representation of the quotient.
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} bVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} bVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.divide = function( aVal, bVal ) {
+BigInteger.divide = function( aVal, bVal ) {
   var qSig,
       qMag;
 
@@ -348,34 +348,34 @@ redscale.BigInteger.divide = function( aVal, bVal ) {
   qSig = qMag.length === 0 ? 0 :
          aVal.signum === bVal.signum ? 1 : -1;
 
-  return new redscale.BigInteger( qSig, qMag );
+  return new BigInteger( qSig, qMag );
 };
 
 /**
  * Divide:Remainder - Returns BigInteger representation of the remainder.
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} bVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} bVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.remainder = function( aVal, bVal ) {
+BigInteger.remainder = function( aVal, bVal ) {
   var rSig,
       rMag;
 
   rMag = redscale.divide( aVal.magnitude, bVal.magnitude )[1];
   rSig = rMag.length === 0 ? 0 : aVal.signum;
 
-  return new redscale.BigInteger( rSig, rMag );
+  return new BigInteger( rSig, rMag );
 };
 
 /**
  * Divide - Returns an Array of BigInteger representations of the quotient and remainder.
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} bVal
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} bVal
  * @returns {Int16Array[]}
  * @export
  */
-redscale.BigInteger.divideRem = function( aVal, bVal ) {
+BigInteger.divideRem = function( aVal, bVal ) {
   var qSig,
       rSig,
       qMag,
@@ -389,17 +389,17 @@ redscale.BigInteger.divideRem = function( aVal, bVal ) {
   rMag = quotRem[1];
   rSig = rMag.length === 0 ? 0 : aVal.signum;
 
-  return [new redscale.BigInteger( qSig, qMag ), new redscale.BigInteger( rSig, rMag )];
+  return [new BigInteger( qSig, qMag ), new BigInteger( rSig, rMag )];
 };
 
 /**
  * GCD - Returns BigInteger representation of the GCD.
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} bVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} bVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.gcd = function( aVal, bVal ) {
+BigInteger.gcd = function( aVal, bVal ) {
   var gMag;
 
   if ( aVal.signum === 0 ) { return bVal.abs() }
@@ -407,50 +407,50 @@ redscale.BigInteger.gcd = function( aVal, bVal ) {
 
   gMag = redscale.gcd( aVal.magnitude, bVal.magnitude );
 
-  return new redscale.BigInteger( 1, gMag );
+  return new BigInteger( 1, gMag );
 };
 
 /**
  * Square
- * @param {!redscale.BigInteger} aVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.square = function( aVal ) {
+BigInteger.square = function( aVal ) {
   if ( aVal.signum === 0 ) { return aVal }
 
-  return new redscale.BigInteger( 1, redscale.square( aVal.magnitude ) );
+  return new BigInteger( 1, redscale.square( aVal.magnitude ) );
 };
 
 /**
  * Power
- * @param {!redscale.BigInteger} aVal
+ * @param {!BigInteger} aVal
  * @param {!number} aNum
- * @returns {!redscale.BigInteger}
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.pow = function( aVal, aNum ) {
+BigInteger.pow = function( aVal, aNum ) {
   var pSign,
       pArray;
 
   if ( aNum < 0 ) { throw new Error( "Exponent is negative." ) }
 
-  if ( aVal.signum === 0 ) { return aNum === 0 ? redscale.BigInteger.ONE() : aVal }
+  if ( aVal.signum === 0 ) { return aNum === 0 ? BigInteger.ONE() : aVal }
 
   pSign = aVal.signum < 0 && (aNum & 1) === 1 ? -1 : 1;
   pArray = redscale.pow( aVal.magnitude, aNum );
 
-  return new redscale.BigInteger( pSign, pArray );
+  return new BigInteger( pSign, pArray );
 };
 
 /**
  * Mod
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} mVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} mVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.mod = function( aVal, mVal ) {
+BigInteger.mod = function( aVal, mVal ) {
   var rMag,
       rSig;
 
@@ -459,36 +459,36 @@ redscale.BigInteger.mod = function( aVal, mVal ) {
   rMag = redscale.mod( aVal.magnitude, aVal.signum, mVal.magnitude );
   rSig = redscale.isZero( rMag ) ? 0 : 1;
 
-  return new redscale.BigInteger( rSig, rMag );
+  return new BigInteger( rSig, rMag );
 };
 
 /**
  * Mod Inverse
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} mVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} mVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.modInverse = function( aVal, mVal ) {
+BigInteger.modInverse = function( aVal, mVal ) {
   var rMag;
 
   if ( mVal.signum !== 1 ) { throw new Error( "RedScale: Modulus not positive." ) }
-  if ( redscale.BigInteger.equals( mVal, redscale.BigInteger.ONE() ) ) { return redscale.BigInteger.ZERO() }
+  if ( BigInteger.equals( mVal, BigInteger.ONE() ) ) { return BigInteger.ZERO() }
 
   rMag = redscale.modInverse( aVal.magnitude, aVal.signum, mVal.magnitude );
 
-  return new redscale.BigInteger( 1, rMag );
+  return new BigInteger( 1, rMag );
 };
 
 /**
  * Mod Power
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} expoVal
- * @param {!redscale.BigInteger} mVal
- * @returns {!redscale.BigInteger}
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} expoVal
+ * @param {!BigInteger} mVal
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.modPow = function( aVal, expoVal, mVal ) {
+BigInteger.modPow = function( aVal, expoVal, mVal ) {
   var rMag,
       rSig;
 
@@ -497,17 +497,17 @@ redscale.BigInteger.modPow = function( aVal, expoVal, mVal ) {
 
   console.log(rMag);
 
-  return new redscale.BigInteger( rSig, rMag );
+  return new BigInteger( rSig, rMag );
 };
 
 /**
  * Equals - Returns a boolean representing whether aVal and bVal are equal.
- * @param {!redscale.BigInteger} aVal
- * @param {!redscale.BigInteger} bVal
+ * @param {!BigInteger} aVal
+ * @param {!BigInteger} bVal
  * @returns {!boolean}
  * @export
  */
-redscale.BigInteger.equals = function( aVal, bVal ) {
+BigInteger.equals = function( aVal, bVal ) {
   return redscale.compare( aVal.magnitude, bVal.magnitude ) === 0 &&
          aVal.signum === bVal.signum;
 };
@@ -516,10 +516,10 @@ redscale.BigInteger.equals = function( aVal, bVal ) {
  * fromString - Returns a BigInteger representing the value of the string with the given radix.
  * @param {!string} aStr
  * @param {!number} radix - A number in the range of 2 - 36.
- * @returns {!redscale.BigInteger}
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.fromString = function( aStr, radix ) {
+BigInteger.fromString = function( aStr, radix ) {
   var aRadix = radix ? radix : 10,
       aStrMag = aStr.match( /[a-z0-9]+/i ),
       leadingZeroes,
@@ -531,23 +531,23 @@ redscale.BigInteger.fromString = function( aStr, radix ) {
   leadingZeroes = aStr.match( /[0]+/ );
 
   if ( leadingZeroes === null || leadingZeroes.index !== 0 ) { leadingZeroes = [""]; }
-  if ( leadingZeroes[0].length === aStrMag[0].length ) { return redscale.BigInteger.ZERO() }
+  if ( leadingZeroes[0].length === aStrMag[0].length ) { return BigInteger.ZERO() }
 
   aMag = redscale.fromString( aStrMag[0].slice( leadingZeroes[0].length ), aRadix );
   aSig = aStr.indexOf( "-" ) === 0 ? -1 : 1;
 
-  return new redscale.BigInteger( aSig, aMag );
+  return new BigInteger( aSig, aMag );
 };
 
 /**
  * fromNumber - Returns a BigInteger representing the value of the number.
  * @param {!number} aNum
- * @returns {!redscale.BigInteger}
+ * @returns {!BigInteger}
  * @export
  */
-redscale.BigInteger.fromNumber = function( aNum ) {
+BigInteger.fromNumber = function( aNum ) {
   var aSig = aNum === 0 ? 0 : aNum > 0 ? 1 : -1,
       aMag = redscale.fromNumber( aNum * aSig );
 
-  return new redscale.BigInteger( aSig, aMag );
+  return new BigInteger( aSig, aMag );
 };
