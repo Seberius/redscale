@@ -183,7 +183,7 @@ BigInteger.prototype.toString = function( radix ) {
  * @returns {!number}
  * @export
  */
-BigInteger.prototype.ofValue = function() {
+BigInteger.prototype.valueOf = function() {
   return redscale.toNumber( this.signum, this.magnitude );
 };
 
