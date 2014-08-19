@@ -403,7 +403,7 @@ redscale.subtract = function( aArray, bArray ) {
 /**
  * Multiply - Returns an array representation of the product.
  * @param {!Int16Array} aArray
- * @param {!Int16Array} bArray
+ * @param {!Int16Array|[]} bArray
  * @returns {!Int16Array}
  */
 redscale.multiply = function( aArray, bArray ) {
@@ -886,6 +886,33 @@ redscale.mod = function( aArray, aSign, bArray ) {
 };
 
 /**
+ * Mod Montgomery
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} mArray
+ * @param {!number} rLen
+ * @returns {!Int16Array}
+ */
+redscale.modMontgomery = function( aArray, mArray, rLen ) {
+  var mInvDigit = redscale.modInverse( mArray, -1, new Int16Array( [0, 1] ) ),
+      aLen = aArray.length,
+      aIndex;
+
+  for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
+    var result = redscale.multiply( aArray[aIndex], mInvDigit )[0];
+
+    aArray = redscale.add( aArray, redscale.bitShiftRight( redscale.multiply( mArray, [result] ), 16 * aIndex ) );
+  }
+
+  aArray = redscale.bitShiftRight( aArray, rLen );
+
+  while ( redscale.compare( aArray, mArray ) !== -1 ) {
+    aArray = redscale.subtract( aArray, mArray );
+  }
+
+  return aArray;
+};
+
+/**
  * Mod Barrett
  * @param {!Int16Array} aArray
  * @param {!number} aSign
@@ -895,7 +922,7 @@ redscale.mod = function( aArray, aSign, bArray ) {
  */
 redscale.modBarrett = function( aArray, aSign, mArray, uArray ) {
   var mLen = mArray.length,
-      bArray = redscale.bitShiftLeft( redscale.BigInteger.ONE(), (mLen + 1) * 16, 0 ),
+      bArray,
       qArray,
       rArray;
 
@@ -917,7 +944,7 @@ redscale.modBarrett = function( aArray, aSign, mArray, uArray ) {
    */
   var modBitStrip = function( nArray, mLen ) {
     if ( nArray.length > mLen + 1 ) {
-      nArray = redscale.copy( nArray, 0, new Int16Array( mLen ), 0, mLen );
+      nArray = redscale.copy( nArray, 0, new Int16Array( mLen + 1 ), 0, mLen + 1 );
     }
 
     return nArray;
@@ -932,6 +959,7 @@ redscale.modBarrett = function( aArray, aSign, mArray, uArray ) {
   if ( redscale.compare( rArray, qArray ) >= 0 ) {
     rArray = redscale.subtract( rArray, qArray );
   } else {
+    bArray = redscale.bitShiftLeft( new Int16Array( [1] ), (mLen + 1) * 16, 0 );
     rArray = redscale.subtract( redscale.add( rArray, bArray ), qArray );
   }
 

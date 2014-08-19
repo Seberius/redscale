@@ -372,7 +372,7 @@ BigInteger.remainder = function( aVal, bVal ) {
  * Divide - Returns an Array of BigInteger representations of the quotient and remainder.
  * @param {!BigInteger} aVal
  * @param {!BigInteger} bVal
- * @returns {Int16Array[]}
+ * @returns {!BigInteger[]}
  * @export
  */
 BigInteger.divideRem = function( aVal, bVal ) {
@@ -494,8 +494,6 @@ BigInteger.modPow = function( aVal, expoVal, mVal ) {
 
   rMag = redscale.modPow( aVal.magnitude, aVal.signum, expoVal.magnitude, mVal.magnitude );
   rSig = 1;
-
-  console.log(rMag);
 
   return new BigInteger( rSig, rMag );
 };
