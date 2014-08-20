@@ -886,6 +886,29 @@ redscale.mod = function( aArray, aSign, bArray ) {
 };
 
 /**
+ * Mod Binary Power of 2
+ * @param {!Int16Array} aArray
+ * @param {!number} aMod
+ * @returns {!Int16Array}
+ */
+redscale.modBinary = function( aArray, aMod ) {
+  var aLen = aArray.length * 16,
+      aZero = redscale.numberLeadingZeroes( aArray ),
+      aInt = (aMod >>> 4) + 1,
+      aBit = aMod & 0xF,
+      rArray;
+
+  if ( (aLen - aZero) <= aMod ) {
+    return aArray;
+  }
+
+  rArray = redscale.copy( aArray, 0 , new Int16Array( aInt ), 0, aInt );
+  rArray[aInt - 1] &= (1 << (16 - aBit)) - 1;
+
+  return rArray;
+};
+
+/**
  * Mod Montgomery
  * @param {!Int16Array} aArray
  * @param {!Int16Array} mArray
@@ -1040,7 +1063,7 @@ redscale.modInverse = function( aArray, aSign, mArray ) {
  * @returns {!Int16Array}
  */
 redscale.modPow = function( aArray, aSign, aExpo, aMod ) {
-  return redscale.modPowBinary( aArray, aSign, aExpo, aMod );
+  return redscale.modPowStandard( aArray, aSign, aExpo, aMod );
 };
 
 /**
@@ -1051,7 +1074,7 @@ redscale.modPow = function( aArray, aSign, aExpo, aMod ) {
  * @param {!Int16Array} aMod
  * @returns {!Int16Array}
  */
-redscale.modPowBinary = function( aArray, aSign, aExpo, aMod ) {
+redscale.modPowStandard = function( aArray, aSign, aExpo, aMod ) {
   var mArray = new Int16Array( [1] );
 
   while ( !redscale.isZero( aExpo ) ) {
