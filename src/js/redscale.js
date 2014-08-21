@@ -1067,7 +1067,7 @@ redscale.modPow = function( aArray, aSign, aExpo, aMod ) {
 };
 
 /**
- * Mod Pow Binary
+ * Mod Pow Standard
  * @param {!Int16Array} aArray
  * @param {!number} aSign
  * @param {!Int16Array} aExpo
@@ -1087,6 +1087,10 @@ redscale.modPowStandard = function( aArray, aSign, aExpo, aMod ) {
   if ( aSign < 0 ) { mArray = redscale.subtract( aMod, mArray ); }
 
   return mArray;
+};
+
+redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
+
 };
 
 /**
@@ -1117,6 +1121,22 @@ redscale.modPowGarner = function( cryptArray, nArray, pArray, qArray, secPArray,
   mArray = redscale.mod( redscale.multiply( mArray, pArray ), 1, nArray );
 
   return redscale.mod( redscale.add( mArray, mpArray ), 1, nArray );
+};
+
+redscale.and = function( aArray, aSign, bArray, bSign ) {
+
+};
+
+redscale.or = function( aArray, aSign, bArray, bSign ) {
+
+};
+
+redscale.xor = function( aArray, aSign, bArray, bSign ) {
+
+};
+
+redscale.not = function( aArray, aSign ) {
+
 };
 
 /**
