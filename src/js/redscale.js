@@ -1063,7 +1063,14 @@ redscale.modInverse = function( aArray, aSign, mArray ) {
  * @returns {!Int16Array}
  */
 redscale.modPow = function( aArray, aSign, aExpo, aMod ) {
-  return redscale.modPowStandard( aArray, aSign, aExpo, aMod );
+  var aLen = aArray.length,
+      eLen = aExpo.length;
+
+  if ( eLen > 1 || aLen * aExpo[0] > 256 ) {
+    return redscale.modPowMontgomery( aArray, aSign, aExpo, aMod );
+  } else {
+    return redscale.modPowStandard( aArray, aSign, aExpo, aMod );
+  }
 };
 
 /**
@@ -1075,22 +1082,54 @@ redscale.modPow = function( aArray, aSign, aExpo, aMod ) {
  * @returns {!Int16Array}
  */
 redscale.modPowStandard = function( aArray, aSign, aExpo, aMod ) {
-  var mArray = new Int16Array( [1] );
+  var rArray = new Int16Array( [1] );
 
   while ( !redscale.isZero( aExpo ) ) {
-    if ( redscale.isOdd( aExpo ) ) { mArray = redscale.mod( redscale.multiply( aArray, mArray ), 1, aMod ); }
+    if ( redscale.isOdd( aExpo ) ) { rArray = redscale.mod( redscale.multiply( aArray, rArray ), 1, aMod ); }
 
     aExpo = redscale.bitShiftRight( aExpo, 1 );
     aArray = redscale.mod( redscale.square( aArray ), 1, aMod );
   }
 
-  if ( aSign < 0 ) { mArray = redscale.subtract( aMod, mArray ); }
+  if ( aSign < 0 ) { rArray = redscale.subtract( aMod, rArray ); }
 
-  return mArray;
+  return rArray;
 };
 
 redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
+  var trailingZeroes = redscale.numberTrailingZeroes( aMod ),
+      oMod,
+      eMod,
+      oModInv,
+      eModInv,
+      oResult,
+      eResult,
+      rArray;
 
+  var oddMod = function( aArray ) {
+
+  };
+
+  var evenMod = function( aArray ) {
+    var eArray = new Int16Array( [1] );
+
+    return eArray;
+  };
+
+  if ( !trailingZeroes ) {
+    rArray = oddMod( aMod )
+  } else {
+    oMod = redscale.bitShiftRight( aMod, trailingZeroes );
+    eMod = redscale.bitShiftLeft( new Int16Array( [1] ), trailingZeroes, 0 );
+
+    oResult = oddMod( oMod );
+    eResult = evenMod( eMod );
+
+    oModInv = redscale.modInverse( oMod, 1, eMod );
+    eModInv = redscale.modInverse( eMod, 1, oMod );
+  }
+
+  return rArray;
 };
 
 /**
