@@ -1106,12 +1106,22 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
       eResult,
       rArray;
 
-  var oddMod = function( aArray ) {
+  var oddMod = function( aArray, aExpo, oMod ) {
 
   };
 
-  var evenMod = function( aArray ) {
-    var eArray = new Int16Array( [1] );
+  var evenMod = function( aArray, aExpo, trailingZeroes ) {
+    var eArray = new Int16Array( [1] ),
+        mArray = redscale.modBinary( aArray, trailingZeroes );
+
+    while ( !redscale.isZero( aExpo ) ) {
+      if ( redscale.isOdd( aExpo ) ) {
+        eArray = redscale.modBinary( redscale.multiply( mArray, eArray ), trailingZeroes );
+      }
+
+      aExpo = redscale.bitShiftRight( aExpo, 1 );
+      mArray = redscale.modBinary( redscale.square( mArray ), trailingZeroes );
+    }
 
     return eArray;
   };
@@ -1122,8 +1132,8 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
     oMod = redscale.bitShiftRight( aMod, trailingZeroes );
     eMod = redscale.bitShiftLeft( new Int16Array( [1] ), trailingZeroes, 0 );
 
-    oResult = oddMod( oMod );
-    eResult = evenMod( eMod );
+    oResult = oddMod( aArray, oMod );
+    eResult = evenMod( aArray, trailingZeroes );
 
     oModInv = redscale.modInverse( oMod, 1, eMod );
     eModInv = redscale.modInverse( eMod, 1, oMod );
