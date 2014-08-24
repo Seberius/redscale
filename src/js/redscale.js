@@ -352,16 +352,21 @@ redscale.add = function( aArray, bArray ) {
       bLen = bArray.length,
       sLen = Math.max( aLen, bLen ) + 1,
       sArray = new Int16Array( sLen ),
-      tArray = new Int16Array( sLen ),
       carry = 0,
-      sIndex;
+      sIndex,
+      sum;
 
   redscale.copy( aArray, 0, sArray, 0, aLen );
-  redscale.copy( bArray, 0, tArray, 0, bLen );
 
-  for ( sIndex = 0; sIndex < sLen; sIndex++ ) {
-    var sum = (sArray[sIndex] & redscale.INT16_MASK) + (tArray[sIndex] & redscale.INT16_MASK) + carry;
+  for ( sIndex = 0; sIndex < bLen; sIndex++ ) {
+    sum = (sArray[sIndex] & redscale.INT16_MASK) + (bArray[sIndex] & redscale.INT16_MASK) + carry;
     sArray[sIndex] = sum & redscale.INT16_MASK;
+    carry = sum >>> 16;
+  }
+
+  while ( carry ) {
+    sum = (sArray[sIndex] & redscale.INT16_MASK) + carry;
+    sArray[sIndex++] = sum & redscale.INT16_MASK;
     carry = sum >>> 16;
   }
 
@@ -912,12 +917,12 @@ redscale.modBinary = function( aArray, aMod ) {
  * Mod Montgomery
  * @param {!Int16Array} aArray
  * @param {!Int16Array} mArray
+ * @param {!Int16Array} mInvDigit
  * @param {!number} rLen
  * @returns {!Int16Array}
  */
-redscale.modMontgomery = function( aArray, mArray, rLen ) {
-  var mInvDigit = redscale.modInverse( mArray, -1, new Int16Array( [0, 1] ) ),
-      aLen = aArray.length,
+redscale.modMontgomery = function( aArray, mArray, mInvDigit, rLen ) {
+  var aLen = aArray.length,
       aIndex;
 
   for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
@@ -1055,6 +1060,25 @@ redscale.modInverse = function( aArray, aSign, mArray ) {
 };
 
 /**
+ * Mod Inverse Int16
+ * @param {!number} aVal
+ * @returns {!number}
+ */
+redscale.modInverseInt16 = function( aVal ) {
+  var rVal;
+
+  aVal = aVal & 0xFFFF;
+  rVal = aVal;
+
+  rVal *= (2 - (rVal * aVal)) & 0xF;
+  rVal *= (2 - (rVal * aVal)) & 0xFF;
+  rVal *= (2 - (rVal * aVal)) & 0xFFF;
+  rVal *= (2 - (rVal * aVal)) & 0xFFFF;
+
+  return rVal & 0xFFFF;
+};
+
+/**
  * Mod Pow
  * @param {!Int16Array} aArray
  * @param {!number} aSign
@@ -1096,6 +1120,14 @@ redscale.modPowStandard = function( aArray, aSign, aExpo, aMod ) {
   return rArray;
 };
 
+/**
+ * Mod Pow Montgomery
+ * @param {!Int16Array} aArray
+ * @param {!number} aSign
+ * @param {!Int16Array} aExpo
+ * @param {!Int16Array} aMod
+ * @returns {!Int16Array}
+ */
 redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
   var trailingZeroes = redscale.numberTrailingZeroes( aMod ),
       oMod,
@@ -1106,21 +1138,22 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
       eResult,
       rArray;
 
-  var oddMod = function( aArray, aExpo, oMod ) {
-
+  var oddMod = function( aArray, aSign, aExpo, oMod ) {
+    var mInvDigit = redscale.modInverseInt16( -oMod[0] );
   };
 
   var evenMod = function( aArray, aExpo, trailingZeroes ) {
-    var eArray = new Int16Array( [1] ),
-        mArray = redscale.modBinary( aArray, trailingZeroes );
+    var eArray = new Int16Array( [1] );
+
+    aArray = redscale.modBinary( aArray, trailingZeroes );
 
     while ( !redscale.isZero( aExpo ) ) {
       if ( redscale.isOdd( aExpo ) ) {
-        eArray = redscale.modBinary( redscale.multiply( mArray, eArray ), trailingZeroes );
+        eArray = redscale.modBinary( redscale.multiply( aArray, eArray ), trailingZeroes );
       }
 
       aExpo = redscale.bitShiftRight( aExpo, 1 );
-      mArray = redscale.modBinary( redscale.square( mArray ), trailingZeroes );
+      aArray = redscale.modBinary( redscale.square( aArray ), trailingZeroes );
     }
 
     return eArray;
@@ -1132,8 +1165,8 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
     oMod = redscale.bitShiftRight( aMod, trailingZeroes );
     eMod = redscale.bitShiftLeft( new Int16Array( [1] ), trailingZeroes, 0 );
 
-    oResult = oddMod( aArray, oMod );
-    eResult = evenMod( aArray, trailingZeroes );
+    oResult = oddMod( aArray, aSign, aExpo, oMod );
+    eResult = evenMod( aArray, aExpo, trailingZeroes );
 
     oModInv = redscale.modInverse( oMod, 1, eMod );
     eModInv = redscale.modInverse( eMod, 1, oMod );
