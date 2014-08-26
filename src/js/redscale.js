@@ -287,7 +287,7 @@ redscale.bitShiftLeft = function( srcArray, leftShift, padZeroes ) {
 };
 
 /**
- * Array Bit Shift Left - Shifts the source array left given bits.
+ * Array Bit Shift Right - Shifts the source array right given bits.
  *     Will shrink array to minimum size required.
  * @param {!Int16Array} srcArray
  * @param {!number} rightShift
