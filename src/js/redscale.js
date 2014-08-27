@@ -1139,7 +1139,15 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
       rArray;
 
   var oddMod = function( aArray, aSign, aExpo, oMod ) {
-    var mInvDigit = redscale.modInverseInt16( -oMod[0] );
+    var mInvDigit = redscale.modInverseInt16( -oMod[0] ),
+        eLen = aExpo.length,
+        wLen,
+        wSet,
+        wBit;
+
+    wLen = eLen < 8 ? 1 : eLen < 32 ? 2 : eLen < 128 ? 3 : eLen < 512 ? 4 : eLen < 1536 ? 5 : 6;
+    wSet = (eLen / wLen) | 0;
+    wBit = eLen % wLen;
   };
 
   var evenMod = function( aArray, aExpo, trailingZeroes ) {
