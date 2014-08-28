@@ -745,7 +745,7 @@ redscale.square = function( aArray ) {
       pIndex;
 
   /**
-   *
+   * Multiply Add Carry Add
    * @param {!Int16Array} pArray
    * @param {!number} pIndex
    * @param {!Int16Array} aArray
@@ -805,8 +805,8 @@ redscale.squareKaratsuba = function( aArray, aLen ) {
   var kLen = (aLen + 1) >>> 1,
       aHigh,
       aLow,
-      aHigh2,
-      aLow2;
+      aHighSqr,
+      aLowSqr;
 
   var highNum = function( aArray, aLen, kLen ) {
     var highArray;
@@ -832,17 +832,17 @@ redscale.squareKaratsuba = function( aArray, aLen ) {
 
   aHigh = highNum( aArray, aLen, kLen );
   aLow = lowNum( aArray, aLen, kLen );
-  aHigh2 = redscale.square( aHigh );
-  aLow2 = redscale.square( aLow );
+  aHighSqr = redscale.square( aHigh );
+  aLowSqr = redscale.square( aLow );
 
   return redscale.add(
            redscale.bitShiftLeft(
              redscale.add(
-               redscale.bitShiftLeft( aHigh2, kLen * 16, 0 ),
+               redscale.bitShiftLeft( aHighSqr, kLen * 16, 0 ),
                redscale.subtract(
                  redscale.square( redscale.add( aHigh, aLow) ),
-                 redscale.add( aHigh2, aLow2 ))), kLen * 16, 0 ),
-           aLow2 );
+                 redscale.add( aHighSqr, aLowSqr ))), kLen * 16, 0 ),
+           aLowSqr );
 };
 
 /**
