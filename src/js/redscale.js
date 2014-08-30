@@ -1143,11 +1143,14 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
         eLen = aExpo.length,
         oLen = oMod.length,
         aMontArray = redscale.bitShiftLeft( aArray, oLen * 16, 0 ),
+        eIndex,
         wIndex = 2,
         wVal,
         wLen,
         wSet,
         wBit,
+        wMask,
+        wShift,
         wArray,
         wBase,
         wBaseSqr;
@@ -1157,14 +1160,29 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
     wSet = (eLen / wVal) | 0;
     wBit = eLen % wVal;
     wArray = new Array( wLen );
-    wBase = aMontArray;
-    wBaseSqr = redscale.square( wBase );
+    wBase = redscale.modMontgomery( aMontArray, oMod, mInvDigit, oLen );
+    wBaseSqr = redscale.modMontgomery( redscale.square( wBase ), oMod, mInvDigit, oLen );
 
     wArray[0] = wBase;
     wArray[1] = wBaseSqr;
 
     while ( wIndex < wLen ) {
-      wArray[wIndex++] = redscale.multiply( wArray[wIndex - 2], wBaseSqr);
+      wArray[wIndex++] = redscale.modMontgomery( redscale.multiply( wArray[wIndex - 2], wBaseSqr), oMod, mInvDigit, oLen );
+    }
+
+    wMask = wLen;
+    wShift = 0;
+
+    for ( eIndex = 0, wIndex = 0; wIndex < wSet; wIndex++ ) {
+      var eVal = (aExpo[eIndex] >>> wShift) & wMask;
+
+      if ( wShift > (16 - wVal) ) {
+        eIndex++;
+        eVal += (aExpo[eIndex] & (wMask >>> wShift - 16)) << (wShift - 16);
+        wShift -= 16;
+      }
+
+      wShift += wVal;
     }
   };
 
