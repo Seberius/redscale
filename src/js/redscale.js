@@ -1155,7 +1155,7 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
         wArray,
         wBase,
         wBaseSqr,
-        wWindowSqr;
+        rArray;
 
     wVal = eLen < 8 ? 1 : eLen < 32 ? 2 : eLen < 128 ? 3 : eLen < 512 ? 4 : eLen < 1536 ? 5 : 6;
     wLen = (1 << wVal) - 1;
@@ -1165,18 +1165,11 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
     wBase = redscale.modMontgomery( aMontArray, oMod, mInvDigit, rLen );
     wBaseSqr = redscale.modMontgomery( redscale.square( wBase ), oMod, mInvDigit, rLen );
 
-    wArray[0] = wBase;
-    wArray[1] = wBaseSqr;
+    wArray[1] = wBase;
+    wArray[2] = wBaseSqr;
 
     while ( wIndex < wLen ) {
       wArray[wIndex++] = redscale.modMontgomery( redscale.multiply( wArray[wIndex - 2], wBaseSqr), oMod, mInvDigit, rLen );
-    }
-
-    wSqr = wVal;
-
-    while ( wSqr ) {
-      wWindowSqr = redscale.modMontgomery( wBase, oMod, mInvDigit, rLen );
-      wSqr--;
     }
 
     wMask = wLen;
@@ -1189,6 +1182,11 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
         eIndex++;
         eVal += (aExpo[eIndex] & (wMask >>> wShift - 16)) << (wShift - 16);
         wShift -= 16;
+      }
+
+      while ( wSqr ) {
+        rArray = redscale.modMontgomery( wBase, oMod, mInvDigit, rLen );
+        wSqr--;
       }
 
       wShift += wVal;
