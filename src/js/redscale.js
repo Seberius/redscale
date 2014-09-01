@@ -1138,6 +1138,13 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
       eResult,
       rArray;
 
+  /**
+   * Odd Mod Function
+   * @param {!Int16Array} aArray
+   * @param {!number} aSign
+   * @param {!Int16Array} aExpo
+   * @param {!Int16Array} oMod
+   */
   var oddMod = function( aArray, aSign, aExpo, oMod ) {
     var mInvDigit = new Int16Array( redscale.modInverseInt16( -oMod[0] ) ),
         eLen = aExpo.length,
@@ -1147,15 +1154,19 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
         wIndex,
         wVal = eLen < 8 ? 1 : eLen < 32 ? 2 : eLen < 128 ? 3 : eLen < 512 ? 4 : eLen < 1536 ? 5 : 6,
         wLen = (1 << wVal) - 1,
-        wSet = (eLen / wVal) | 0,
-        wBit = eLen % wVal,
+        wLeadingZeroes = redscale.intLeadingZeroes( aExpo[eLen - 1] ),
+        wBits = (eLen * 16) - wLeadingZeroes,
         wArray = new Array( wLen ),
         wBase = redscale.modMontgomery( aMontArray, oMod, mInvDigit, mLen ),
         wBaseSqr = redscale.modMontgomery( redscale.square( wBase ), oMod, mInvDigit, mLen ),
+        wBuffer,
+        wBufferLen,
         wMask,
         wShift,
         wSqr,
-        rArray;
+        rArray,
+        remainingBits,
+        nonZeroShift;
 
     wArray[1] = wBase;
 
@@ -1164,42 +1175,98 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
     }
 
     wMask = wLen;
-    wShift = 0;
-    rArray = new Int16Array( [1] );
+    nonZeroShift = 16 - wLeadingZeroes - wVal;
+    remainingBits = wBits;
+    eIndex = eLen - 1;
 
-    for ( eIndex = 0; wIndex < wSet; wIndex++ ) {
-      var eBit = (aExpo[eIndex] >>> wShift) & 1,
-          eVal;
+    if ( nonZeroShift < 0 ) {
+      wBuffer = ((aExpo[eIndex] << -nonZeroShift) & wMask) & ((aExpo[eIndex - 1] >>> nonZeroShift + 16) & wMask);
+    } else {
+      wBuffer = (aExpo[eIndex] >>> nonZeroShift) & wMask;
+    }
 
-      wSqr = wVal;
+    wBufferLen = wVal;
+    wSqr = 0;
+
+    while ( (wBuffer & 1) === 0 ) {
+      wBuffer >>>= 1;
+      wBufferLen--;
+      wSqr++;
+    }
+
+    rArray = redscale.copy( wArray[wBuffer], 0, new Int16Array( wArray[wBuffer].length ), 0, wArray[wBuffer].length );
+
+    while ( wSqr-- ) {
+      rArray = redscale.modMontgomery( redscale.square( rArray ), oMod, mInvDigit, mLen );
+    }
+
+    wShift = nonZeroShift - wVal - 1;
+
+    if ( wShift <= 0 ) {
+      wShift += 16;
+      eIndex--;
+    }
+
+    while ( remainingBits >= wVal ) {
+      var eBit = (aExpo[eIndex] >>> wShift) & 1;
 
       if ( eBit ) {
-        eVal = (aExpo[eIndex] >>> wShift) & wMask;
+        nonZeroShift = wShift + 1 - wVal;
+        wSqr = 0;
 
-        if ( wShift > (15 - wVal) ) {
-          eVal += (aExpo[eIndex] & (wMask >>> wShift - 16)) << (wShift - 16);
-          wShift -= 16;
-          eIndex++;
+        if ( nonZeroShift < 0 ) {
+          wBuffer = ((aExpo[eIndex] << -nonZeroShift) & wMask) & ((aExpo[eIndex - 1] >>> nonZeroShift + 16) & wMask);
+        } else {
+          wBuffer = (aExpo[eIndex] >>> nonZeroShift) & wMask;
         }
+
+        wBufferLen = wVal;
+
+        while ( (wBuffer & 1) === 0 ) {
+          wBuffer >>>= 1;
+          wBufferLen--;
+          wSqr++;
+        }
+
+        while ( wBufferLen-- ) {
+          aMontArray = redscale.modMontgomery( redscale.square( aMontArray ), oMod, mInvDigit, mLen );
+        }
+
+        rArray = redscale.modMontgomery( redscale.multiply( rArray, wArray[wBuffer] ), oMod, mInvDigit, mLen );
 
         while ( wSqr-- ) {
-          rArray = redscale.modMontgomery( redscale.square( rArray ), oMod, mInvDigit, mLen );
+          aMontArray = redscale.modMontgomery( redscale.square( aMontArray ), oMod, mInvDigit, mLen );
         }
 
-        rArray = redscale.modMontgomery( redscale.multiply( rArray, wArray[eVal] ), oMod, mInvDigit, mLen );
+        wShift -= wVal;
+
+        if ( wShift <= 0 ) {
+          wShift += 16;
+          eIndex--;
+        }
       } else {
-        if ( wShift > 15 ) {
-          wShift = 0;
-          eIndex++;
-        }
-
         rArray = redscale.modMontgomery( redscale.square( rArray ), oMod, mInvDigit, mLen );
+
+        wShift--;
+
+        if ( wShift <= 0 ) {
+          wShift += 16;
+          eIndex--;
+        }
       }
 
       wShift += wVal;
     }
+
+    return rArray;
   };
 
+  /**
+   * Even Mod Function
+   * @param {!Int16Array} aArray
+   * @param {!Int16Array} aExpo
+   * @param {!number} trailingZeroes
+   */
   var evenMod = function( aArray, aExpo, trailingZeroes ) {
     var eArray = new Int16Array( [1] );
 
@@ -1218,7 +1285,7 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
   };
 
   if ( !trailingZeroes ) {
-    rArray = oddMod( aMod )
+    rArray = oddMod( aArray, aSign, aExpo, aMod );
   } else {
     oMod = redscale.bitShiftRight( aMod, trailingZeroes );
     eMod = redscale.bitShiftLeft( new Int16Array( [1] ), trailingZeroes, 0 );
