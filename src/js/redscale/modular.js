@@ -78,16 +78,16 @@ redscale.modular.modMontgomery = function( aArray, mArray, mInvDigit, mLen ) {
 redscale.modular.modInverse = function( aArray, aSign, mArray ) {
   var mNorm = new Int16Array( mArray ),
       aNorm = new Int16Array( aArray ),
-      mSigned = new redscale.arrays.SignArray( 1, mArray ),
-      bVal = new redscale.arrays.SignArray( 0, new Int16Array( 0 ) ),
-      dVal = new redscale.arrays.SignArray( 1, new Int16Array( [1] ) );
+      mSigned = new redscale.SignArray( 1, mArray ),
+      bVal = new redscale.SignArray( 0, new Int16Array( 0 ) ),
+      dVal = new redscale.SignArray( 1, new Int16Array( [1] ) );
 
   while( !redscale.util.isZero( mNorm ) ) {
     while ( redscale.util.isEven( mNorm ) ) {
       mNorm = redscale.util.bitShiftRight( mNorm, 1 );
 
       if ( redscale.util.isOdd( bVal.array ) ) {
-        bVal = redscale.arrays.SignArray.signSubtract( bVal, mSigned );
+        bVal = redscale.SignArray.signSubtract( bVal, mSigned );
       }
 
       bVal.array = redscale.util.bitShiftRight( bVal.array, 1 );
@@ -101,7 +101,7 @@ redscale.modular.modInverse = function( aArray, aSign, mArray ) {
       aNorm = redscale.util.bitShiftRight( aNorm, 1 );
 
       if ( redscale.util.isOdd( dVal.array ) ) {
-        dVal = redscale.arrays.SignArray.signSubtract( dVal, mSigned );
+        dVal = redscale.SignArray.signSubtract( dVal, mSigned );
       }
 
       dVal.array = redscale.util.bitShiftRight( dVal.array, 1 );
@@ -113,17 +113,17 @@ redscale.modular.modInverse = function( aArray, aSign, mArray ) {
 
     if ( redscale.util.compare( mNorm, aNorm ) >= 0 ) {
       mNorm = redscale.arithmetic.subtract( mNorm, aNorm );
-      bVal = redscale.arrays.SignArray.signSubtract( bVal, dVal );
+      bVal = redscale.SignArray.signSubtract( bVal, dVal );
     } else {
       aNorm = redscale.arithmetic.subtract( aNorm, mNorm );
-      dVal = redscale.arrays.SignArray.signSubtract( dVal, bVal );
+      dVal = redscale.SignArray.signSubtract( dVal, bVal );
     }
   }
 
   if ( dVal.sign < aSign ) {
-    redscale.arrays.SignArray.signAdd( dVal, mSigned );
+    redscale.SignArray.signAdd( dVal, mSigned );
   } else if ( dVal.sign > aSign ) {
-    redscale.arrays.SignArray.signSubtract( dVal, mSigned );
+    redscale.SignArray.signSubtract( dVal, mSigned );
   }
 
   return dVal.array;
