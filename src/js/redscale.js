@@ -941,64 +941,6 @@ redscale.modMontgomery = function( aArray, mArray, mInvDigit, mLen ) {
 };
 
 /**
- * Mod Barrett
- * @param {!Int16Array} aArray
- * @param {!number} aSign
- * @param {!Int16Array} mArray
- * @param {!Int16Array} uArray
- * @returns {!Int16Array}
- */
-redscale.modBarrett = function( aArray, aSign, mArray, uArray ) {
-  var mLen = mArray.length,
-      bArray,
-      qArray,
-      rArray;
-
-  /**
-   * Partial Multiply
-   * @param {!Int16Array} aArray
-   * @param {!Int16Array} bArray
-   * @returns {!Int16Array}
-   */
-  var partialMultiply = function( aArray, bArray ) {
-    return redscale.multiply( aArray, bArray );
-  };
-
-  /**
-   * Mod Bit Strip
-   * @param {!Int16Array} nArray
-   * @param {!number} mLen
-   * @returns {!Int16Array}
-   */
-  var modBitStrip = function( nArray, mLen ) {
-    if ( nArray.length > mLen + 1 ) {
-      nArray = redscale.copy( nArray, 0, new Int16Array( mLen + 1 ), 0, mLen + 1 );
-    }
-
-    return nArray;
-  };
-
-  qArray = redscale.bitShiftRight( aArray, (mLen - 1) * 16 );
-  qArray = partialMultiply( qArray, uArray );
-  qArray = redscale.bitShiftRight( qArray, (mLen + 1) * 16 );
-  qArray = modBitStrip( partialMultiply( qArray, mArray ), mLen );
-  rArray = modBitStrip( aArray, mLen );
-
-  if ( redscale.compare( rArray, qArray ) >= 0 ) {
-    rArray = redscale.subtract( rArray, qArray );
-  } else {
-    bArray = redscale.bitShiftLeft( new Int16Array( [1] ), (mLen + 1) * 16, 0 );
-    rArray = redscale.subtract( redscale.add( rArray, bArray ), qArray );
-  }
-
-  while ( redscale.compare( rArray, mArray ) !== -1 ) {
-    rArray = redscale.subtract( rArray, mArray );
-  }
-
-  return rArray;
-};
-
-/**
  * Mod Inverse
  * @param {!Int16Array} aArray
  * @param {!number} aSign
