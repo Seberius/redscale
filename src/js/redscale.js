@@ -1083,17 +1083,18 @@ redscale.modInverseInt16 = function( aVal ) {
  * @param {!Int16Array} aArray
  * @param {!number} aSign
  * @param {!Int16Array} aExpo
+ * @param {!number} aExpoSign
  * @param {!Int16Array} aMod
  * @returns {!Int16Array}
  */
-redscale.modPow = function( aArray, aSign, aExpo, aMod ) {
+redscale.modPow = function( aArray, aSign, aExpo, aExpoSign, aMod ) {
   var aLen = aArray.length,
       eLen = aExpo.length;
 
   if ( eLen > 1 || aLen * aExpo[0] > 256 ) {
-    return redscale.modPowMontgomery( aArray, aSign, aExpo, aMod );
+    return redscale.modPowMontgomery( aArray, aSign, aExpo, aExpoSign, aMod );
   } else {
-    return redscale.modPowStandard( aArray, aSign, aExpo, aMod );
+    return redscale.modPowStandard( aArray, aSign, aExpo, aExpoSign, aMod );
   }
 };
 
@@ -1102,10 +1103,11 @@ redscale.modPow = function( aArray, aSign, aExpo, aMod ) {
  * @param {!Int16Array} aArray
  * @param {!number} aSign
  * @param {!Int16Array} aExpo
+ * @param {!number} aExpoSign
  * @param {!Int16Array} aMod
  * @returns {!Int16Array}
  */
-redscale.modPowStandard = function( aArray, aSign, aExpo, aMod ) {
+redscale.modPowStandard = function( aArray, aSign, aExpo, aExpoSign, aMod ) {
   var rArray = new Int16Array( [1] );
 
   while ( !redscale.isZero( aExpo ) ) {
@@ -1115,7 +1117,13 @@ redscale.modPowStandard = function( aArray, aSign, aExpo, aMod ) {
     aArray = redscale.mod( redscale.square( aArray ), 1, aMod );
   }
 
-  if ( aSign < 0 ) { rArray = redscale.subtract( aMod, rArray ); }
+  if ( aSign < 0 ) {
+    rArray = redscale.subtract( aMod, rArray );
+  }
+
+  if ( aExpoSign < 0 ) {
+    rArray = redscale.modInverse( rArray, 1, aMod );
+  }
 
   return rArray;
 };
@@ -1125,10 +1133,11 @@ redscale.modPowStandard = function( aArray, aSign, aExpo, aMod ) {
  * @param {!Int16Array} aArray
  * @param {!number} aSign
  * @param {!Int16Array} aExpo
+ * @param {!number} aExpoSign
  * @param {!Int16Array} aMod
  * @returns {!Int16Array}
  */
-redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
+redscale.modPowMontgomery = function( aArray, aSign, aExpo, aExpoSign, aMod ) {
   var trailingZeroes = redscale.numberTrailingZeroes( aMod ),
       oMod,
       eMod,
@@ -1279,20 +1288,44 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
    * @param {!number} trailingZeroes
    */
   var evenMod = function( aArray, aExpo, trailingZeroes ) {
-    var eArray = new Int16Array( [1] );
+    var eLen = aExpo.length,
+        eLeadingZeroes = redscale.intLeadingZeroes( aExpo[eLen - 1] ),
+        eBits = (eLen * 16) - eLeadingZeroes,
+        eShift = 16 - eLeadingZeroes,
+        eIndex = eLen - 1,
+        eVal,
+        rArray;
 
     aArray = redscale.modBinary( aArray, trailingZeroes );
+    rArray = redscale.copy( aArray, 0, new Int16Array( aArray.length ), 0, aArray.length );
 
-    while ( !redscale.isZero( aExpo ) ) {
-      if ( redscale.isOdd( aExpo ) ) {
-        eArray = redscale.modBinary( redscale.multiply( aArray, eArray ), trailingZeroes );
-      }
+    eBits--;
+    eShift--;
 
-      aExpo = redscale.bitShiftRight( aExpo, 1 );
-      aArray = redscale.modBinary( redscale.square( aArray ), trailingZeroes );
+    if ( eShift < 0 ) {
+      eShift += 16;
+      eIndex--;
     }
 
-    return eArray;
+    while ( eBits !== 0 ) {
+      eVal = (aExpo[eIndex] >>> eShift) & 1;
+
+      rArray = redscale.modBinary( redscale.square( rArray ), trailingZeroes );
+
+      if ( eVal === 1 ) {
+        rArray = redscale.modBinary( redscale.multiply( rArray, aArray ), trailingZeroes );
+      }
+
+      eBits--;
+      eShift--;
+
+      if ( eShift < 0 ) {
+        eShift += 16;
+        eIndex--;
+      }
+    }
+
+    return rArray;
   };
 
   if ( !trailingZeroes ) {
@@ -1313,6 +1346,10 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
     rArray = redscale.mod( redscale.add( oProd, eProd ), 1, aMod )
   }
 
+  if ( aExpoSign < 0 ) {
+    rArray = redscale.modInverse( rArray, 1, aMod );
+  }
+
   return rArray;
 };
 
@@ -1330,8 +1367,8 @@ redscale.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
 redscale.modPowGarner = function( cryptArray, nArray, pArray, qArray, secPArray, secQArray, pInvArray ) {
   var cpArray = redscale.mod( cryptArray, 1, pArray ),
       cqArray = redscale.mod( cryptArray, 1, qArray ),
-      mpArray = redscale.modPow( cpArray, 1, secPArray, pArray ),
-      mqArray = redscale.modPow( cqArray, 1, secQArray, qArray ),
+      mpArray = redscale.modPow( cpArray, 1, secPArray, 1, pArray ),
+      mqArray = redscale.modPow( cqArray, 1, secQArray, 1, qArray ),
       mArray;
 
   if ( redscale.compare( mpArray, mqArray ) !== -1 ) {
