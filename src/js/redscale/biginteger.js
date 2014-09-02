@@ -174,7 +174,7 @@ redscale.BigInteger.prototype.equals = function( bVal ) {
  * @export
  */
 redscale.BigInteger.prototype.toString = function( radix ) {
-  return redscale.arrays.toString( this.signum, this.magnitude, radix );
+  return redscale.util.toString( this.signum, this.magnitude, radix );
 };
 
 /**
@@ -184,7 +184,7 @@ redscale.BigInteger.prototype.toString = function( radix ) {
  * @export
  */
 redscale.BigInteger.prototype.valueOf = function() {
-  return redscale.arrays.toNumber( this.signum, this.magnitude );
+  return redscale.util.toNumber( this.signum, this.magnitude );
 };
 
 /**
@@ -194,7 +194,7 @@ redscale.BigInteger.prototype.valueOf = function() {
  * @export
  */
 redscale.BigInteger.prototype.toNumber = function() {
-  return redscale.arrays.toNumber( this.signum, this.magnitude );
+  return redscale.util.toNumber( this.signum, this.magnitude );
 };
 
 /**
@@ -260,19 +260,19 @@ redscale.BigInteger.add = function( aVal, bVal ) {
   if ( bVal.signum === 0 ) { return aVal; }
   if ( aVal.signum === bVal.signum ) {
     sSig = aVal.signum;
-    sMag = redscale.arrays.add( aVal.magnitude, bVal.magnitude );
+    sMag = redscale.arithmetic.add( aVal.magnitude, bVal.magnitude );
   } else {
-    abComp = redscale.arrays.compare( aVal.magnitude, bVal.magnitude );
+    abComp = redscale.util.compare( aVal.magnitude, bVal.magnitude );
 
     if ( abComp === 0 ) {
       sSig = 0;
       sMag = new Int16Array( 0 );
     } else if ( abComp > 0 ) {
       sSig = abComp === aVal.signum ? 1 : -1;
-      sMag = redscale.arrays.subtract( aVal.magnitude, bVal.magnitude );
+      sMag = redscale.arithmetic.subtract( aVal.magnitude, bVal.magnitude );
     } else {
       sSig = abComp === aVal.signum ? 1 : -1;
-      sMag = redscale.arrays.subtract( bVal.magnitude, aVal.magnitude );
+      sMag = redscale.arithmetic.subtract( bVal.magnitude, aVal.magnitude );
     }
   }
 
@@ -295,19 +295,19 @@ redscale.BigInteger.subtract = function( aVal, bVal ) {
   if ( bVal.signum === 0 ) { return aVal; }
   if ( aVal.signum !== bVal.signum ) {
     dSig = aVal.signum;
-    dMag = redscale.arrays.add( aVal.magnitude, bVal.magnitude );
+    dMag = redscale.arithmetic.add( aVal.magnitude, bVal.magnitude );
   } else {
-    abComp = redscale.arrays.compare( aVal.magnitude, bVal.magnitude );
+    abComp = redscale.util.compare( aVal.magnitude, bVal.magnitude );
 
     if ( abComp === 0 ) {
       dSig = 0;
       dMag = new Int16Array( 0 );
     } else if ( abComp > 0 ) {
       dSig = abComp === aVal.signum ? 1 : -1;
-      dMag = redscale.arrays.subtract( aVal.magnitude, bVal.magnitude );
+      dMag = redscale.arithmetic.subtract( aVal.magnitude, bVal.magnitude );
     } else {
       dSig = abComp === aVal.signum ? 1 : -1;
-      dMag = redscale.arrays.subtract( bVal.magnitude, aVal.magnitude );
+      dMag = redscale.arithmetic.subtract( bVal.magnitude, aVal.magnitude );
     }
   }
 
@@ -328,7 +328,7 @@ redscale.BigInteger.multiply = function( aVal, bVal ) {
   if ( aVal.signum === 0 || bVal.signum === 0 ) { return new redscale.BigInteger( 0, new Int16Array( 0 ) ) }
 
   pSig = aVal.signum === bVal.signum ? 1 : -1;
-  pMag = redscale.arrays.multiply( aVal.magnitude, bVal.magnitude );
+  pMag = redscale.arithmetic.multiply( aVal.magnitude, bVal.magnitude );
 
   return new redscale.BigInteger( pSig, pMag );
 };
@@ -344,7 +344,7 @@ redscale.BigInteger.divide = function( aVal, bVal ) {
   var qSig,
       qMag;
 
-  qMag = redscale.arrays.divide( aVal.magnitude, bVal.magnitude )[0];
+  qMag = redscale.arithmetic.divide( aVal.magnitude, bVal.magnitude )[0];
   qSig = qMag.length === 0 ? 0 :
          aVal.signum === bVal.signum ? 1 : -1;
 
@@ -362,7 +362,7 @@ redscale.BigInteger.remainder = function( aVal, bVal ) {
   var rSig,
       rMag;
 
-  rMag = redscale.arrays.divide( aVal.magnitude, bVal.magnitude )[1];
+  rMag = redscale.arithmetic.divide( aVal.magnitude, bVal.magnitude )[1];
   rSig = rMag.length === 0 ? 0 : aVal.signum;
 
   return new redscale.BigInteger( rSig, rMag );
@@ -382,7 +382,7 @@ redscale.BigInteger.divideRem = function( aVal, bVal ) {
       rMag,
       quotRem;
 
-  quotRem = redscale.arrays.divide( aVal.magnitude, bVal.magnitude );
+  quotRem = redscale.arithmetic.divide( aVal.magnitude, bVal.magnitude );
   qMag = quotRem[0];
   qSig = qMag.length === 0 ? 0 :
          aVal.signum === bVal.signum ? 1 : -1;
@@ -405,7 +405,7 @@ redscale.BigInteger.gcd = function( aVal, bVal ) {
   if ( aVal.signum === 0 ) { return bVal.abs() }
   if ( bVal.signum === 0 ) { return aVal.abs() }
 
-  gMag = redscale.arrays.gcd( aVal.magnitude, bVal.magnitude );
+  gMag = redscale.arithmetic.gcd( aVal.magnitude, bVal.magnitude );
 
   return new redscale.BigInteger( 1, gMag );
 };
@@ -419,7 +419,7 @@ redscale.BigInteger.gcd = function( aVal, bVal ) {
 redscale.BigInteger.square = function( aVal ) {
   if ( aVal.signum === 0 ) { return aVal }
 
-  return new redscale.BigInteger( 1, redscale.arrays.square( aVal.magnitude ) );
+  return new redscale.BigInteger( 1, redscale.arithmetic.square( aVal.magnitude ) );
 };
 
 /**
@@ -438,7 +438,7 @@ redscale.BigInteger.pow = function( aVal, aNum ) {
   if ( aVal.signum === 0 ) { return aNum === 0 ? redscale.BigInteger.ONE() : aVal }
 
   pSign = aVal.signum < 0 && (aNum & 1) === 1 ? -1 : 1;
-  pArray = redscale.arrays.pow( aVal.magnitude, aNum );
+  pArray = redscale.arithmetic.pow( aVal.magnitude, aNum );
 
   return new redscale.BigInteger( pSign, pArray );
 };
@@ -456,8 +456,8 @@ redscale.BigInteger.mod = function( aVal, mVal ) {
 
   if ( mVal.signum !== 1 ) { throw new Error( "RedScale: Modulus not positive." ) }
 
-  rMag = redscale.arrays.mod( aVal.magnitude, aVal.signum, mVal.magnitude );
-  rSig = redscale.arrays.isZero( rMag ) ? 0 : 1;
+  rMag = redscale.modular.mod( aVal.magnitude, aVal.signum, mVal.magnitude );
+  rSig = redscale.util.isZero( rMag ) ? 0 : 1;
 
   return new redscale.BigInteger( rSig, rMag );
 };
@@ -475,7 +475,7 @@ redscale.BigInteger.modInverse = function( aVal, mVal ) {
   if ( mVal.signum !== 1 ) { throw new Error( "RedScale: Modulus not positive." ) }
   if ( redscale.BigInteger.equals( mVal, redscale.BigInteger.ONE() ) ) { return redscale.BigInteger.ZERO() }
 
-  rMag = redscale.arrays.modInverse( aVal.magnitude, aVal.signum, mVal.magnitude );
+  rMag = redscale.modular.modInverse( aVal.magnitude, aVal.signum, mVal.magnitude );
 
   return new redscale.BigInteger( 1, rMag );
 };
@@ -492,7 +492,7 @@ redscale.BigInteger.modPow = function( aVal, expoVal, mVal ) {
   var rMag,
       rSig;
 
-  rMag = redscale.arrays.modPow( aVal.magnitude, aVal.signum, expoVal.magnitude, expoVal.signum, mVal.magnitude );
+  rMag = redscale.modular.modPow( aVal.magnitude, aVal.signum, expoVal.magnitude, expoVal.signum, mVal.magnitude );
   rSig = 1;
 
   return new redscale.BigInteger( rSig, rMag );
@@ -506,7 +506,7 @@ redscale.BigInteger.modPow = function( aVal, expoVal, mVal ) {
  * @export
  */
 redscale.BigInteger.equals = function( aVal, bVal ) {
-  return redscale.arrays.compare( aVal.magnitude, bVal.magnitude ) === 0 &&
+  return redscale.util.compare( aVal.magnitude, bVal.magnitude ) === 0 &&
          aVal.signum === bVal.signum;
 };
 
@@ -531,7 +531,7 @@ redscale.BigInteger.fromString = function( aStr, radix ) {
   if ( leadingZeroes === null || leadingZeroes.index !== 0 ) { leadingZeroes = [""]; }
   if ( leadingZeroes[0].length === aStrMag[0].length ) { return redscale.BigInteger.ZERO() }
 
-  aMag = redscale.arrays.fromString( aStrMag[0].slice( leadingZeroes[0].length ), aRadix );
+  aMag = redscale.util.fromString( aStrMag[0].slice( leadingZeroes[0].length ), aRadix );
   aSig = aStr.indexOf( "-" ) === 0 ? -1 : 1;
 
   return new redscale.BigInteger( aSig, aMag );
@@ -545,7 +545,7 @@ redscale.BigInteger.fromString = function( aStr, radix ) {
  */
 redscale.BigInteger.fromNumber = function( aNum ) {
   var aSig = aNum === 0 ? 0 : aNum > 0 ? 1 : -1,
-      aMag = redscale.arrays.fromNumber( aNum * aSig );
+      aMag = redscale.util.fromNumber( aNum * aSig );
 
   return new redscale.BigInteger( aSig, aMag );
 };
