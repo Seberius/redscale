@@ -1,7 +1,7 @@
-goog.provide('Ratio');
+goog.provide('redscale.Ratio');
 
 /**
- * Ratio type.
+ * redscale.Ratio type.
  * @param {!number} signum
  * @param {!Int16Array} numerator
  * @param {!Int16Array} denominator
@@ -9,7 +9,7 @@ goog.provide('Ratio');
  * @struct
  * @export
  */
-Ratio = function( signum, numerator, denominator ) {
+redscale.Ratio = function( signum, numerator, denominator ) {
   this.signum = signum;
   this.numerator = numerator;
   this.denominator = denominator;
