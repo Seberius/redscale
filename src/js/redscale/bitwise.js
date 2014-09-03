@@ -22,7 +22,7 @@ redscale.bitwise.bitShiftLeft = function( srcArray, leftShift, padZeroes ) {
       srcIndex,
       tarIndex;
 
-  if ( srcLen < 0 ) { return new Int16Array( 0 ); }
+  if ( srcLen === 0 ) { return new Int16Array( 0 ); }
 
   tarArray = new Int16Array(tarLen);
 

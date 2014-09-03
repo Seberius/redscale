@@ -162,7 +162,8 @@ redscale.modular.modInverseInt16 = function( aVal ) {
  */
 redscale.modular.modPow = function( aArray, aSign, aExpo, aExpoSign, aMod ) {
   var aLen = aArray.length,
-      eLen = aExpo.length;
+      eLen = aExpo.length,
+      rArray;
 
   if ( eLen === 0 || redscale.util.compare( aArray, [1] ) === 0 ) {
     return redscale.util.compare( aMod, [1] ) === 0 ? new Int16Array( 0 ) : new Int16Array( [1] );
@@ -172,11 +173,21 @@ redscale.modular.modPow = function( aArray, aSign, aExpo, aExpoSign, aMod ) {
     return new Int16Array(0);
   }
 
-  if ( eLen > 1 || aLen * aExpo[0] > 256 ) {
-    return redscale.modular.modPowMontgomery( aArray, aSign, aExpo, aExpoSign, aMod );
-  } else {
-    return redscale.modular.modPowStandard( aArray, aSign, aExpo, aExpoSign, aMod );
+  if ( aSign < 0 || redscale.util.compare( aArray, aMod ) >= 0 ) {
+    aArray = redscale.modular.mod( aArray, aSign, aMod );
   }
+
+  if ( eLen > 1 ) {
+    rArray = redscale.modular.modPowMontgomery( aArray, aSign, aExpo, aMod );
+  } else {
+    rArray = redscale.modular.modPowStandard( aArray, aSign, aExpo, aMod );
+  }
+
+  if ( aExpoSign < 0 ) {
+    rArray = redscale.modular.modInverse( rArray, 1, aMod );
+  }
+
+  return rArray;
 };
 
 /**
@@ -184,15 +195,14 @@ redscale.modular.modPow = function( aArray, aSign, aExpo, aExpoSign, aMod ) {
  * @param {!Int16Array} aArray
  * @param {!number} aSign
  * @param {!Int16Array} aExpo
- * @param {!number} aExpoSign
  * @param {!Int16Array} aMod
  * @returns {!Int16Array}
  */
-redscale.modular.modPowStandard = function( aArray, aSign, aExpo, aExpoSign, aMod ) {
+redscale.modular.modPowStandard = function( aArray, aSign, aExpo, aMod ) {
   var eLen = aExpo.length,
       eLeadingZeroes = redscale.util.intLeadingZeroes( aExpo[eLen - 1] ),
       eBits = (eLen * 16) - eLeadingZeroes,
-      eShift = 16 - eLeadingZeroes,
+      eShift = 16 - eLeadingZeroes - 1,
       eIndex = eLen - 1,
       eVal,
       rArray;
@@ -208,7 +218,7 @@ redscale.modular.modPowStandard = function( aArray, aSign, aExpo, aExpoSign, aMo
     eIndex--;
   }
 
-  while ( eBits !== 0 ) {
+  while ( (eBits !== 0) ) {
     eVal = (aExpo[eIndex] >>> eShift) & 1;
 
     rArray = redscale.modular.mod( redscale.arithmetic.square( rArray ), 1, aMod );
@@ -226,14 +236,6 @@ redscale.modular.modPowStandard = function( aArray, aSign, aExpo, aExpoSign, aMo
     }
   }
 
-  if ( aSign < 0 ) {
-    rArray = redscale.arithmetic.subtract( aMod, rArray );
-  }
-
-  if ( aExpoSign < 0 ) {
-    rArray = redscale.modular.modInverse( rArray, 1, aMod );
-  }
-
   return rArray;
 };
 
@@ -242,11 +244,10 @@ redscale.modular.modPowStandard = function( aArray, aSign, aExpo, aExpoSign, aMo
  * @param {!Int16Array} aArray
  * @param {!number} aSign
  * @param {!Int16Array} aExpo
- * @param {!number} aExpoSign
  * @param {!Int16Array} aMod
  * @returns {!Int16Array}
  */
-redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aExpoSign, aMod ) {
+redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
   var trailingZeroes = redscale.util.numberTrailingZeroes( aMod ),
       oMod,
       eMod,
@@ -455,10 +456,6 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aExpoSign, a
     eProd = redscale.arithmetic.multiply( redscale.arithmetic.multiply( eResult, oMod ), oModInv );
 
     rArray = redscale.modular.mod( redscale.arithmetic.add( oProd, eProd ), 1, aMod )
-  }
-
-  if ( aExpoSign < 0 ) {
-    rArray = redscale.modular.modInverse( rArray, 1, aMod );
   }
 
   return rArray;
