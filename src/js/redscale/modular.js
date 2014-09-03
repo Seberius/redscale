@@ -87,14 +87,14 @@ redscale.modular.modMontgomery = function( aArray, mArray, mInvDigit, mLen ) {
   aArray = redscale.util.copy( aArray, 0, new Int16Array( mLen * 2 ), 0, aArray.length );
 
   while ( aIndex < mLen ) {
-    prod = (aArray[aIndex++] * mInvDigit) & redscale.util.INT16_MASK;
-
+    prod = (aArray[aIndex] * mInvDigit) & redscale.util.INT16_MASK;
     multiplyAddCarry( aArray, aIndex, prod, mArray, mLen );
+    aIndex++;
   }
 
   aArray = redscale.bitwise.bitShiftRight( aArray, mLen * 16 );
 
-  while ( redscale.util.compare( aArray, mArray ) !== -1 ) {
+  while ( redscale.util.compare( aArray, mArray ) >= 0 ) {
     aArray = redscale.arithmetic.subtract( aArray, mArray );
   }
 
