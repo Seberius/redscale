@@ -398,7 +398,6 @@ redscale.arithmetic.square = function( aArray ) {
       pArray = new Int16Array( pLen ),
       carry = 0,
       prod,
-      sum,
       aVal,
       aIndex,
       pIndex;
@@ -415,12 +414,13 @@ redscale.arithmetic.square = function( aArray ) {
   var multiplyAddAdd = function( pArray, pIndex, aArray, aIndex, aLen ) {
     var aVal = aArray[aIndex++] & redscale.util.INT16_MASK,
         carry = 0,
-        prod;
+        prod,
+        sum;
 
-    for ( ; aIndex < aLen; aIndex++, pIndex++ ) {
-      prod = (aArray[aIndex] & redscale.util.INT16_MASK) * aVal +
-        (pArray[pIndex] & redscale.util.INT16_MASK) + carry;
-      pArray[pIndex] = prod & redscale.util.INT16_MASK;
+    while ( aIndex < aLen ) {
+      prod = (aArray[aIndex++] & redscale.util.INT16_MASK) * aVal +
+             (pArray[pIndex] & redscale.util.INT16_MASK) + carry;
+      pArray[pIndex++] = prod & redscale.util.INT16_MASK;
       carry = prod >>> 16;
     }
 

@@ -51,15 +51,45 @@ redscale.modular.modBinary = function( aArray, mLen ) {
  */
 redscale.modular.modMontgomery = function( aArray, mArray, mInvDigit, mLen ) {
   var aIndex = 0,
-      result;
+      prod;
+
+  /**
+   * Multiply Add Carry Add
+   * @param {!Int16Array} aArray
+   * @param {!number} aIndex
+   * @param {!number} aVal
+   * @param {!Int16Array} mArray
+   * @param {!number} mLen
+   * @returns {!Int16Array}
+   */
+  var multiplyAddCarry = function( aArray, aIndex, aVal, mArray, mLen ) {
+    var carry = 0,
+        mIndex = 0,
+        prod,
+        sum;
+
+    while ( mIndex < mLen ) {
+      prod = (mArray[mIndex++] & redscale.util.INT16_MASK) * aVal +
+             (aArray[aIndex] & redscale.util.INT16_MASK) + carry;
+      aArray[aIndex++] = prod & redscale.util.INT16_MASK;
+      carry = prod >>> 16;
+    }
+
+    while ( carry ) {
+      sum = (aArray[aIndex] & redscale.util.INT16_MASK) + carry;
+      aArray[aIndex++] = sum & redscale.util.INT16_MASK;
+      carry = sum >>> 16;
+    }
+
+    return aArray;
+  };
+
+  aArray = redscale.util.copy( aArray, 0, new Int16Array( mLen * 2 ), 0, aArray.length );
 
   while ( aIndex < mLen ) {
-    result = (aArray[aIndex] * mInvDigit) & redscale.util.INT16_MASK;
-    result = redscale.bitwise.bitShiftLeft( redscale.arithmetic.multiply( mArray, result === 0 ? [] : [result] ), 16 * aIndex, 0 );
+    prod = (aArray[aIndex++] * mInvDigit) & redscale.util.INT16_MASK;
 
-    aArray = redscale.arithmetic.add( aArray, result );
-
-    aIndex++;
+    multiplyAddCarry( aArray, aIndex, prod, mArray, mLen );
   }
 
   aArray = redscale.bitwise.bitShiftRight( aArray, mLen * 16 );
@@ -317,7 +347,7 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
       rArray = redscale.modular.modMontgomery( redscale.arithmetic.square( rArray ), oMod, mInvDigit, mLen );
     }
 
-    wShift = nonZeroShift - wVal - 1;
+    wShift = nonZeroShift - 1;
     wBits -= wVal;
 
     if ( wShift <= 0 ) {
