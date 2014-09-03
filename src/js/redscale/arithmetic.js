@@ -74,7 +74,9 @@ redscale.arithmetic.multiply = function( aArray, bArray ) {
       pArray,
       aIndex;
 
-  if ( aLen > 120 && bLen > 120 ) { return redscale.arithmetic.multiplyKaratsuba( aArray, aLen, bArray, bLen )}
+  if ( aLen === 0 || bLen === 0 ) { return new Int16Array( 0 ); }
+
+  if ( aLen > 120 && bLen > 120 ) { return redscale.arithmetic.multiplyKaratsuba( aArray, aLen, bArray, bLen ); }
 
   pArray = new Int16Array( aLen + bLen );
 
@@ -147,9 +149,9 @@ redscale.arithmetic.multiplyKaratsuba = function( aArray, aLen, bArray, bLen ) {
   prodHighLow = redscale.arithmetic.multiply( redscale.arithmetic.add( aHigh, aLow ), redscale.arithmetic.add( bHigh, bLow ) );
 
   return redscale.arithmetic.add(
-    redscale.util.bitShiftLeft(
+    redscale.bitwise.bitShiftLeft(
       redscale.arithmetic.add(
-        redscale.util.bitShiftLeft( prodHigh, 16 * kLen, 0 ),
+        redscale.bitwise.bitShiftLeft( prodHigh, 16 * kLen, 0 ),
         redscale.arithmetic.subtract(
           redscale.arithmetic.subtract( prodHighLow, prodHigh ),
           prodLow ) ),
@@ -213,8 +215,8 @@ redscale.arithmetic.divideKnuth = function( nArray, nLen, dArray, dLen ) {
   var INT16_MASK = redscale.util.INT16_MASK,
       qLen = nLen - dLen + 1,
       shiftNum = redscale.util.intLeadingZeroes( dArray[dLen - 1] ),
-      aArray = redscale.util.bitShiftLeft( nArray, shiftNum, 1 ),
-      bArray = redscale.util.bitShiftLeft( dArray, shiftNum, 0 ),
+      aArray = redscale.bitwise.bitShiftLeft( nArray, shiftNum, 1 ),
+      bArray = redscale.bitwise.bitShiftLeft( dArray, shiftNum, 0 ),
       qArray = new Int16Array( qLen ),
       bHigh = bArray[dLen - 1],
       bLow = bArray[dLen - 2],
@@ -296,7 +298,7 @@ redscale.arithmetic.divideKnuth = function( nArray, nLen, dArray, dLen ) {
     qArray[qIndex] = quot;
   }
 
-  return [redscale.util.trimLeadingZeroes( qArray ), redscale.util.bitShiftRight( aArray, shiftNum )];
+  return [redscale.util.trimLeadingZeroes( qArray ), redscale.bitwise.bitShiftRight( aArray, shiftNum )];
 };
 
 /**
@@ -331,14 +333,14 @@ redscale.arithmetic.binaryGCD = function( aArray, bArray ) {
       shiftNum = Math.min( aZero, bZero ),
       temp;
 
-  aArray = redscale.util.bitShiftRight( aArray, aZero );
-  bArray = redscale.util.bitShiftRight( bArray, bZero );
+  aArray = redscale.bitwise.bitShiftRight( aArray, aZero );
+  bArray = redscale.bitwise.bitShiftRight( bArray, bZero );
 
   while ( !redscale.util.isZero( bArray ) ) {
     var abComp;
 
     if ( !redscale.util.isOdd( bArray ) ) {
-      bArray = redscale.util.bitShiftRight( bArray, redscale.util.numberTrailingZeroes( bArray ) );
+      bArray = redscale.bitwise.bitShiftRight( bArray, redscale.util.numberTrailingZeroes( bArray ) );
     } else {
       abComp = redscale.util.compare( aArray, bArray );
 
@@ -352,7 +354,7 @@ redscale.arithmetic.binaryGCD = function( aArray, bArray ) {
     }
   }
 
-  return redscale.util.bitShiftLeft( aArray, shiftNum, 0 );
+  return redscale.bitwise.bitShiftLeft( aArray, shiftNum, 0 );
 };
 
 /**
@@ -447,7 +449,7 @@ redscale.arithmetic.square = function( aArray ) {
     multiplyAddAdd( pArray, pIndex, aArray, aIndex, aLen );
   }
 
-  pArray = redscale.util.bitShiftLeft( pArray, 1, 0 );
+  pArray = redscale.bitwise.bitShiftLeft( pArray, 1, 0 );
   pArray[0] |= aArray[0] & 1;
 
   return pArray;
@@ -494,9 +496,9 @@ redscale.arithmetic.squareKaratsuba = function( aArray, aLen ) {
   aLowSqr = redscale.arithmetic.square( aLow );
 
   return redscale.arithmetic.add(
-    redscale.util.bitShiftLeft(
+    redscale.bitwise.bitShiftLeft(
       redscale.arithmetic.add(
-        redscale.util.bitShiftLeft( aHighSqr, kLen * 16, 0 ),
+        redscale.bitwise.bitShiftLeft( aHighSqr, kLen * 16, 0 ),
         redscale.arithmetic.subtract(
           redscale.arithmetic.square( redscale.arithmetic.add( aHigh, aLow) ),
           redscale.arithmetic.add( aHighSqr, aLowSqr ))), kLen * 16, 0 ),
@@ -515,7 +517,7 @@ redscale.arithmetic.pow = function( aArray, expoNum ) {
       expoCount = expoNum,
       rArray;
 
-  if ( aNorm.length === 1 && aNorm[0] === 1 ) { return redscale.util.bitShiftRight( aNorm, aZero * expoNum ); }
+  if ( aNorm.length === 1 && aNorm[0] === 1 ) { return redscale.bitwise.bitShiftRight( aNorm, aZero * expoNum ); }
 
   rArray = new Int16Array([1]);
 

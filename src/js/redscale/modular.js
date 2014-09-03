@@ -21,17 +21,17 @@ redscale.modular.mod = function( aArray, aSign, bArray ) {
 /**
  * Mod Binary Power of 2
  * @param {!Int16Array} aArray
- * @param {!number} aMod
+ * @param {!number} mLen
  * @returns {!Int16Array}
  */
-redscale.modular.modBinary = function( aArray, aMod ) {
+redscale.modular.modBinary = function( aArray, mLen ) {
   var aLen = aArray.length * 16,
       aZero = redscale.util.numberLeadingZeroes( aArray ),
-      aInt = (aMod >>> 4) + 1,
-      aBit = aMod & 0xF,
+      aInt = (mLen >>> 4) + 1,
+      aBit = mLen & 0xF,
       rArray;
 
-  if ( (aLen - aZero) <= aMod ) {
+  if ( (aLen - aZero) <= mLen ) {
     return aArray;
   }
 
@@ -45,21 +45,24 @@ redscale.modular.modBinary = function( aArray, aMod ) {
  * Mod Montgomery
  * @param {!Int16Array} aArray
  * @param {!Int16Array} mArray
- * @param {!Int16Array} mInvDigit
+ * @param {!number} mInvDigit
  * @param {!number} mLen
  * @returns {!Int16Array}
  */
 redscale.modular.modMontgomery = function( aArray, mArray, mInvDigit, mLen ) {
-  var aLen = aArray.length,
-      aIndex;
+  var aIndex = 0,
+      result;
 
-  for ( aIndex = 0; aIndex < aLen; aIndex++ ) {
-    var result = redscale.arithmetic.multiply( aArray[aIndex], mInvDigit )[0];
+  while ( aIndex < mLen ) {
+    result = (aArray[aIndex] * mInvDigit) & redscale.util.INT16_MASK;
+    result = redscale.bitwise.bitShiftLeft( redscale.arithmetic.multiply( mArray, result === 0 ? [] : [result] ), 16 * aIndex, 0 );
 
-    aArray = redscale.arithmetic.add( aArray, redscale.util.bitShiftRight( redscale.arithmetic.multiply( mArray, [result] ), 16 * aIndex ) );
+    aArray = redscale.arithmetic.add( aArray, result );
+
+    aIndex++;
   }
 
-  aArray = redscale.util.bitShiftRight( aArray, mLen );
+  aArray = redscale.bitwise.bitShiftRight( aArray, mLen * 16 );
 
   while ( redscale.util.compare( aArray, mArray ) !== -1 ) {
     aArray = redscale.arithmetic.subtract( aArray, mArray );
@@ -84,13 +87,13 @@ redscale.modular.modInverse = function( aArray, aSign, mArray ) {
 
   while( !redscale.util.isZero( mNorm ) ) {
     while ( redscale.util.isEven( mNorm ) ) {
-      mNorm = redscale.util.bitShiftRight( mNorm, 1 );
+      mNorm = redscale.bitwise.bitShiftRight( mNorm, 1 );
 
       if ( redscale.util.isOdd( bVal.array ) ) {
         bVal = redscale.SignArray.signSubtract( bVal, mSigned );
       }
 
-      bVal.array = redscale.util.bitShiftRight( bVal.array, 1 );
+      bVal.array = redscale.bitwise.bitShiftRight( bVal.array, 1 );
 
       if ( !bVal.array.length ) {
         bVal.sign = 0;
@@ -98,13 +101,13 @@ redscale.modular.modInverse = function( aArray, aSign, mArray ) {
     }
 
     while ( redscale.util.isEven( aNorm ) ) {
-      aNorm = redscale.util.bitShiftRight( aNorm, 1 );
+      aNorm = redscale.bitwise.bitShiftRight( aNorm, 1 );
 
       if ( redscale.util.isOdd( dVal.array ) ) {
         dVal = redscale.SignArray.signSubtract( dVal, mSigned );
       }
 
-      dVal.array = redscale.util.bitShiftRight( dVal.array, 1 );
+      dVal.array = redscale.bitwise.bitShiftRight( dVal.array, 1 );
 
       if ( !dVal.array.length ) {
         dVal.sign = 0;
@@ -160,6 +163,14 @@ redscale.modular.modInverseInt16 = function( aVal ) {
 redscale.modular.modPow = function( aArray, aSign, aExpo, aExpoSign, aMod ) {
   var aLen = aArray.length,
       eLen = aExpo.length;
+
+  if ( eLen === 0 || redscale.util.compare( aArray, [1] ) === 0 ) {
+    return redscale.util.compare( aMod, [1] ) === 0 ? new Int16Array( 0 ) : new Int16Array( [1] );
+  }
+
+  if ( aLen === 0 && aExpoSign >= 0 ) {
+    return new Int16Array(0);
+  }
 
   if ( eLen > 1 || aLen * aExpo[0] > 256 ) {
     return redscale.modular.modPowMontgomery( aArray, aSign, aExpo, aExpoSign, aMod );
@@ -255,10 +266,10 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aExpoSign, a
    * @param {!Int16Array} oMod
    */
   var oddMod = function( aArray, aSign, aExpo, oMod ) {
-    var mInvDigit = new Int16Array( redscale.modular.modInverseInt16( -oMod[0] ) ),
+    var mInvDigit = redscale.modular.modInverseInt16( -oMod[0] ),
         eLen = aExpo.length,
         mLen = oMod.length,
-        aMontArray = redscale.util.bitShiftLeft( aArray, mLen * 16, 0 ),
+        aMontArray = redscale.modular.mod( redscale.bitwise.bitShiftLeft( aArray, mLen * 16, 0 ), aSign, oMod ),
         eIndex,
         wIndex,
         wVal = eLen < 8 ? 1 : eLen < 32 ? 2 : eLen < 128 ? 3 : eLen < 512 ? 4 : eLen < 1536 ? 5 : 6,
@@ -367,7 +378,7 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aExpoSign, a
 
     if ( wBits ) {
       wMask = (1 << wBits) - 1;
-      wBuffer = wArray[0] & wMask;
+      wBuffer = aExpo[0] & wMask;
 
       while ( wBits-- ) {
         rArray = redscale.modular.modMontgomery( redscale.arithmetic.square( rArray ), oMod, mInvDigit, mLen );
@@ -431,8 +442,8 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aExpoSign, a
   if ( !trailingZeroes ) {
     rArray = oddMod( aArray, aSign, aExpo, aMod );
   } else {
-    oMod = redscale.util.bitShiftRight( aMod, trailingZeroes );
-    eMod = redscale.util.bitShiftLeft( new Int16Array( [1] ), trailingZeroes, 0 );
+    oMod = redscale.bitwise.bitShiftRight( aMod, trailingZeroes );
+    eMod = redscale.bitwise.bitShiftLeft( new Int16Array( [1] ), trailingZeroes, 0 );
 
     oResult = oddMod( aArray, aSign, aExpo, oMod );
     eResult = evenMod( aArray, aExpo, trailingZeroes );
