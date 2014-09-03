@@ -295,14 +295,13 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
    * @param {!number} aSign
    * @param {!Int16Array} aExpo
    * @param {!Int16Array} oMod
+   * @returns {!Int16Array}
    */
   var oddMod = function( aArray, aSign, aExpo, oMod ) {
     var mInvDigit = redscale.modular.modInverseInt16( -oMod[0] ),
         eLen = aExpo.length,
         mLen = oMod.length,
         aMontArray = redscale.modular.mod( redscale.bitwise.bitShiftLeft( aArray, mLen * 16, 0 ), aSign, oMod ),
-        eIndex,
-        wIndex,
         wVal = eLen < 8 ? 1 : eLen < 32 ? 2 : eLen < 128 ? 3 : eLen < 512 ? 4 : eLen < 1536 ? 5 : 6,
         wLen = 1 << wVal,
         wMask = wLen - 1,
@@ -314,15 +313,20 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
         wShift,
         wSqr,
         nonZeroShift,
-        rArray;
+        rArray,
+        eIndex,
+        wIndex,
+        prod;
 
     wArray[1] = redscale.modular.modMontgomery( aMontArray, oMod, mInvDigit, mLen );
-    wArray[2] = redscale.modular.modMontgomery( redscale.arithmetic.square( wArray[1] ), oMod, mInvDigit, mLen );
 
-    for ( wIndex = 3; wIndex < wLen; wIndex += 2 ) {
-      wArray[wIndex] =
-        redscale.modular.modMontgomery(
-          redscale.arithmetic.multiply( wArray[wIndex - 2], wArray[2]), oMod, mInvDigit, mLen );
+    if ( wLen > 2 ) {
+      wArray[2] = redscale.modular.modMontgomery( redscale.arithmetic.square( wArray[1] ), oMod, mInvDigit, mLen );
+
+      for ( wIndex = 3; wIndex < wLen; wIndex += 2 ) {
+        prod = redscale.arithmetic.multiply( wArray[wIndex - 2], wArray[2] );
+        wArray[wIndex] = redscale.modular.modMontgomery( prod, oMod, mInvDigit, mLen );
+      }
     }
 
     nonZeroShift = 16 - wLeadingZeroes - wVal;
@@ -390,7 +394,7 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
         wShift -= wVal;
         wBits -= wVal;
 
-        if ( wShift <= 0 ) {
+        if ( wShift < 0 ) {
           wShift += 16;
           eIndex--;
         }
@@ -400,7 +404,7 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
         wShift--;
         wBits--;
 
-        if ( wShift <= 0 ) {
+        if ( wShift < 0 ) {
           wShift += 16;
           eIndex--;
         }
@@ -428,6 +432,7 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
    * @param {!Int16Array} aArray
    * @param {!Int16Array} aExpo
    * @param {!number} trailingZeroes
+   * @returns {!Int16Array}
    */
   var evenMod = function( aArray, aExpo, trailingZeroes ) {
     var eLen = aExpo.length,
