@@ -10,7 +10,7 @@ goog.provide('redscale.BigInteger');
  */
 redscale.BigInteger = function( signum, magnitude ) {
   /** @type {string} */
-  this.redscaleType = "redscale.BigInteger";
+  this.redscaleType = "BigInteger";
   this.signum = signum;
   this.magnitude = magnitude;
 };
@@ -23,7 +23,7 @@ redscale.BigInteger = function( signum, magnitude ) {
  * @export
  */
 redscale.BigInteger.prototype.add = function( bVal ) {
-  return bVal.redscaleType === "redscale.BigInteger" ? redscale.BigInteger.add( this, bVal ) :
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.add( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.add( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -36,7 +36,7 @@ redscale.BigInteger.prototype.add = function( bVal ) {
  * @export
  */
 redscale.BigInteger.prototype.subtract = function( bVal ) {
-  return bVal.redscaleType === "redscale.BigInteger" ? redscale.BigInteger.subtract( this, bVal ) :
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.subtract( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.subtract( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -49,7 +49,7 @@ redscale.BigInteger.prototype.subtract = function( bVal ) {
  * @export
  */
 redscale.BigInteger.prototype.multiply = function( bVal ) {
-  return bVal.redscaleType === "redscale.BigInteger" ? redscale.BigInteger.multiply( this, bVal ) :
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.multiply( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.multiply( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -62,7 +62,7 @@ redscale.BigInteger.prototype.multiply = function( bVal ) {
  * @export
  */
 redscale.BigInteger.prototype.divide = function( bVal ) {
-  return bVal.redscaleType === "redscale.BigInteger" ? redscale.BigInteger.divide( this, bVal ) :
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.divide( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.divide( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -75,7 +75,7 @@ redscale.BigInteger.prototype.divide = function( bVal ) {
  * @export
  */
 redscale.BigInteger.prototype.remainder = function( bVal ) {
-  return bVal.redscaleType === "redscale.BigInteger" ? redscale.BigInteger.remainder( this, bVal ) :
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.remainder( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.remainder( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -88,7 +88,7 @@ redscale.BigInteger.prototype.remainder = function( bVal ) {
  * @export
  */
 redscale.BigInteger.prototype.divideRem = function( bVal ) {
-  return bVal.redscaleType === "redscale.BigInteger" ? redscale.BigInteger.divideRem( this, bVal ) :
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.divideRem( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.divideRem( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -101,7 +101,7 @@ redscale.BigInteger.prototype.divideRem = function( bVal ) {
  * @export
  */
 redscale.BigInteger.prototype.gcd = function( bVal ) {
-  return bVal.redscaleType === "redscale.BigInteger" ? redscale.BigInteger.gcd( this, bVal ) :
+  return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.gcd( this, bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.gcd( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
