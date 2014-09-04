@@ -17,9 +17,28 @@ redscale.Ratio = function( signum, numerator, denominator ) {
 };
 
 /**
+ * Negate - Returns the negation of the redscale.Ratio
+ * @returns {!redscale.Ratio}
+ * @export
+ */
+redscale.Ratio.prototype.negate = function() {
+  return new redscale.Ratio( this.signum * -1, this.numerator, this.denominator );
+};
+
+/**
+ * Absolute - Returns the absolute redscale.Ratio.  Will return the current redscale.Ratio if positive or zero.
+ * @returns {!redscale.Ratio}
+ * @export
+ */
+redscale.Ratio.prototype.abs = function() {
+  return this.signum === -1 ? this.negate() : this;
+};
+
+/**
  * Zero
  * @returns {!redscale.Ratio}
  * @constructor
+ * @export
  */
 redscale.Ratio.ZERO = function() {
   return new redscale.Ratio( 0, new Int16Array( 0 ), new Int16Array( 0 ) );
@@ -29,6 +48,7 @@ redscale.Ratio.ZERO = function() {
  * One
  * @returns {!redscale.Ratio}
  * @constructor
+ * @export
  */
 redscale.Ratio.ONE = function() {
   return new redscale.Ratio( 1, new Int16Array( [1] ), new Int16Array( [1] ) );
@@ -39,6 +59,7 @@ redscale.Ratio.ONE = function() {
  * @param {!redscale.Ratio} aVal
  * @param {!redscale.Ratio} bVal
  * @returns {!redscale.Ratio}
+ * @export
  */
 redscale.Ratio.add = function( aVal, bVal ) {
   var abNumComp,
@@ -47,7 +68,8 @@ redscale.Ratio.add = function( aVal, bVal ) {
       bNum,
       sSig,
       sNum,
-      sDen;
+      sDen,
+      sSim;
 
   if ( aVal.signum === 0 ) { return bVal; }
   if ( bVal.signum === 0 ) { return aVal; }
@@ -81,7 +103,9 @@ redscale.Ratio.add = function( aVal, bVal ) {
     }
   }
 
-  return new redscale.Ratio( sSig, sNum, sDen );
+  sSim = redscale.Ratio.simplify( sNum, sDen );
+
+  return new redscale.Ratio( sSig, sSim[0], sSim[1] );
 };
 
 /**
@@ -89,6 +113,7 @@ redscale.Ratio.add = function( aVal, bVal ) {
  * @param {!redscale.Ratio} aVal
  * @param {!redscale.Ratio} bVal
  * @returns {!redscale.Ratio}
+ * @export
  */
 redscale.Ratio.subtract = function( aVal, bVal ) {
   var abNumComp,
@@ -97,7 +122,8 @@ redscale.Ratio.subtract = function( aVal, bVal ) {
       bNum,
       dSig,
       dNum,
-      dDen;
+      dDen,
+      dSim;
 
   if ( aVal.signum === 0 ) { return bVal; }
   if ( bVal.signum === 0 ) { return aVal; }
@@ -131,7 +157,84 @@ redscale.Ratio.subtract = function( aVal, bVal ) {
     }
   }
 
-  return new redscale.Ratio( dSig, dNum, dDen );
+  dSim = redscale.Ratio.simplify( dNum, dDen );
+
+  return new redscale.Ratio( dSig, dSim[0], dSim[1] );
+};
+
+/**
+ * Multiply
+ * @param {!redscale.Ratio} aVal
+ * @param {!redscale.Ratio} bVal
+ * @returns {!redscale.Ratio}
+ * @export
+ */
+redscale.Ratio.multiply = function( aVal, bVal ) {
+  var pSig,
+      pNum,
+      pDen,
+      pSim;
+
+  if ( aVal.signum === 0 || bVal.signum === 0 ) {
+    return redscale.Ratio.ZERO();
+  }
+
+  pSig = aVal.signum * bVal.signum;
+  pNum = redscale.arithmetic.multiply( aVal.numerator, bVal.numerator );
+  pDen = redscale.arithmetic.multiply( aVal.denominator, bVal.denominator );
+
+  pSim = redscale.Ratio.simplify( pNum, pDen );
+
+  return new redscale.Ratio( pSig, pSim[0], pSim[1] );
+};
+
+/**
+ * Divide
+ * @param {!redscale.Ratio} aVal
+ * @param {!redscale.Ratio} bVal
+ * @returns {!redscale.Ratio}
+ * @export
+ */
+redscale.Ratio.divide = function( aVal, bVal ) {
+  var qSig,
+      qNum,
+      qDen,
+      qSim;
+
+  if ( aVal.signum === 0 || bVal.signum === 0 ) {
+    return redscale.Ratio.ZERO();
+  }
+
+  qSig = aVal.signum * bVal.signum;
+  qNum = redscale.arithmetic.multiply( aVal.numerator, bVal.denominator );
+  qDen = redscale.arithmetic.multiply( aVal.denominator, bVal.numerator );
+
+  qSim = redscale.Ratio.simplify( qNum, qDen );
+
+  return new redscale.Ratio( qSig, qSim[0], qSim[1] );
+};
+
+/**
+ * GCD
+ * @param {!redscale.Ratio} aVal
+ * @param {!redscale.Ratio} bVal
+ * @returns {!redscale.Ratio}
+ * @export
+ */
+redscale.Ratio.gcd = function( aVal, bVal ) {
+  var gNum,
+      gDen,
+      gSim;
+
+  if ( aVal.signum === 0 ) { return bVal.abs() }
+  if ( bVal.signum === 0 ) { return aVal.abs() }
+
+  gNum = redscale.arithmetic.gcd( aVal.numerator, bVal.numerator );
+  gDen = redscale.arithmetic.lcm( aVal.denominator, bVal.denominator );
+
+  gSim = redscale.Ratio.simplify( gNum, gDen );
+
+  return new redscale.Ratio( 1, gSim[0], gSim[1] );
 };
 
 /**
@@ -139,6 +242,7 @@ redscale.Ratio.subtract = function( aVal, bVal ) {
  * @param {!string} aStr
  * @param {!number} radix
  * @returns {!redscale.Ratio}
+ * @export
  */
 redscale.Ratio.fromString = function( aStr, radix ) {
   var aRadix = radix ? radix : 10,
@@ -164,6 +268,7 @@ redscale.Ratio.fromString = function( aStr, radix ) {
  * Ratio from number
  * @param {!number} aVal
  * @returns {!redscale.Ratio}
+ * @export
  */
 redscale.Ratio.fromNumber = function( aVal ) {
   var aSig = aVal === 0 ? 0 : aVal > 0 ? 1 : -1,
@@ -177,6 +282,7 @@ redscale.Ratio.fromNumber = function( aVal ) {
  * Ratio from BigInteger
  * @param {!redscale.BigInteger} aBigInt
  * @returns {!redscale.Ratio}
+ * @export
  */
 redscale.Ratio.fromBigInteger = function( aBigInt ) {
   return new redscale.Ratio( aBigInt.signum, aBigInt.magnitude, new Int16Array( [1] ) );
