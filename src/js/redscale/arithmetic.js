@@ -38,14 +38,11 @@ redscale.arithmetic.add = function( aArray, bArray ) {
  * @returns {!Int16Array}
  */
 redscale.arithmetic.subtract = function( aArray, bArray ) {
-  var aLen = aArray.length,
-      bLen = bArray.length,
-      dArray = new Int16Array( aLen ),
+  var bLen = bArray.length,
+      dArray = redscale.util.copyOf( aArray ),
       dIndex = 0,
       carry = 0,
       diff;
-
-  redscale.util.copy( aArray, 0, dArray, 0, aLen );
 
   while ( dIndex < bLen ) {
     diff = (dArray[dIndex] & redscale.util.INT16_MASK) - (bArray[dIndex] & redscale.util.INT16_MASK) + carry;
@@ -411,7 +408,7 @@ redscale.arithmetic.square = function( aArray ) {
    * @param {!number} aLen
    * @returns {!number}
    */
-  var multiplyAddAdd = function( pArray, pIndex, aArray, aIndex, aLen ) {
+  var multiplyAddCarry = function( pArray, pIndex, aArray, aIndex, aLen ) {
     var aVal = aArray[aIndex++] & redscale.util.INT16_MASK,
         carry = 0,
         prod,
@@ -446,7 +443,7 @@ redscale.arithmetic.square = function( aArray ) {
   }
 
   for ( aIndex = 0, pIndex = 1; aIndex < aLen; aIndex++, pIndex += 2 ) {
-    multiplyAddAdd( pArray, pIndex, aArray, aIndex, aLen );
+    multiplyAddCarry( pArray, pIndex, aArray, aIndex, aLen );
   }
 
   pArray = redscale.bitwise.bitShiftLeft( pArray, 1, 0 );

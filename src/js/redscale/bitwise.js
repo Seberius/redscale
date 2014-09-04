@@ -7,7 +7,6 @@ goog.provide('redscale.bitwise');
  * @param {number} leftShift
  * @param {number} padZeroes
  * @returns {Int16Array}
- * @export
  */
 redscale.bitwise.bitShiftLeft = function( srcArray, leftShift, padZeroes ) {
   var srcLen = srcArray.length,

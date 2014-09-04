@@ -106,6 +106,15 @@ redscale.util.isZero = function( aArray ) {
 };
 
 /**
+ * isOne
+ * @param {!Int16Array} aArray
+ * @returns {!boolean}
+ */
+redscale.util.isOne = function( aArray ) {
+  return (aArray.length === 1) && (aArray[0] === 1);
+};
+
+/**
  * isOdd
  * @param {!Int16Array} aArray
  * @returns {!boolean}
@@ -136,8 +145,26 @@ redscale.util.isEven = function( aArray ) {
 redscale.util.copy = function( srcArray, srcStart, tarArray, tarStart, copyLength ) {
   var srcLimit = srcStart + copyLength;
 
-  for ( ; srcStart < srcLimit ; srcStart++, tarStart++ ) {
-    tarArray[tarStart] = srcArray[srcStart];
+  while ( srcStart < srcLimit ) {
+    tarArray[tarStart++] = srcArray[srcStart++];
+  }
+
+  return tarArray;
+};
+
+/**
+ * Copy of - Makes a copy of the source array.
+ * @param {!Int16Array} srcArray
+ * @returns {!Int16Array}
+ */
+redscale.util.copyOf = function( srcArray ) {
+  var srcLen = srcArray.length,
+      tarArray = new Int16Array( srcLen ),
+      tarIndex = 0;
+
+  while ( tarIndex < srcLen ) {
+    tarArray[tarIndex] = srcArray[tarIndex];
+    tarIndex++;
   }
 
   return tarArray;
