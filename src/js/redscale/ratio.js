@@ -79,11 +79,11 @@ redscale.Ratio.fromBigInteger = function( aBigInt ) {
  * @returns {!Int16Array[]}
  */
 redscale.Ratio.simplify = function( aNum, aDen ) {
-  var gcd = redscale.arithmetic.gcd( aNum, aDen );
+  var aGCD = redscale.arithmetic.gcd( aNum, aDen );
 
-  if ( !redscale.util.isOne( gcd ) ) {
-    aNum = redscale.arithmetic.divide( aNum, gcd );
-    aDen = redscale.arithmetic.divide( aDen, gcd );
+  if ( !redscale.util.isOne( aGCD ) ) {
+    aNum = redscale.arithmetic.divide( aNum, aGCD );
+    aDen = redscale.arithmetic.divide( aDen, aGCD );
   }
 
   return [aNum, aDen];
