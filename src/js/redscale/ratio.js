@@ -17,6 +17,105 @@ redscale.Ratio = function( signum, numerator, denominator ) {
 };
 
 /**
+ * Add - Returns a RedScale type representing the sum.
+ * @param {!redscale.BigInteger|number} bVal - The RedScale type or number being added.
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
+ * @throws {TypeError}
+ * @export
+ */
+redscale.Ratio.prototype.add = function( bVal ) {
+  return bVal.redscaleType === "Ratio" ? redscale.Ratio.add( this, bVal ) :
+         bVal.redscaleType === "BigInteger" ? redscale.Ratio.add( this, bVal.toRatio() ) :
+         typeof bVal === "number" ? redscale.Ratio.add( this, redscale.Ratio.fromNumber( bVal ) ) :
+         (function() { throw new TypeError( "Not a number." ); }());
+};
+
+/**
+ * Subtract - Returns a RedScale type representing the difference.
+ * @param {!redscale.BigInteger|number} bVal - The RedScale type or number being subtracted.
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
+ * @throws {TypeError}
+ * @export
+ */
+redscale.Ratio.prototype.subtract = function( bVal ) {
+  return bVal.redscaleType === "Ratio" ? redscale.Ratio.subtract( this, bVal ) :
+         bVal.redscaleType === "BigInteger" ? redscale.Ratio.subtract( this, bVal.toRatio() ) :
+         typeof bVal === "number" ? redscale.Ratio.subtract( this, redscale.Ratio.fromNumber( bVal ) ) :
+         (function() { throw new TypeError( "Not a number." ); }());
+};
+
+/**
+ * Multiply - Returns a RedScale type representing the product.
+ * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
+ * @throws {TypeError}
+ * @export
+ */
+redscale.Ratio.prototype.multiply = function( bVal ) {
+  return bVal.redscaleType === "Ratio" ? redscale.Ratio.multiply( this, bVal ) :
+         bVal.redscaleType === "BigInteger" ? redscale.Ratio.multiply( this, bVal.toRatio() ) :
+         typeof bVal === "number" ? redscale.Ratio.multiply( this, redscale.Ratio.fromNumber( bVal ) ) :
+         (function() { throw new TypeError( "Not a number." ); }());
+};
+
+/**
+ * Divide - Returns a RedScale type representing the quotient.
+ * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
+ * @throws {TypeError}
+ * @export
+ */
+redscale.Ratio.prototype.divide = function( bVal ) {
+  return bVal.redscaleType === "Ratio" ? redscale.Ratio.divide( this, bVal ) :
+         bVal.redscaleType === "BigInteger" ? redscale.Ratio.divide( this, bVal.toRatio() ) :
+         typeof bVal === "number" ? redscale.Ratio.divide( this, redscale.Ratio.fromNumber( bVal ) ) :
+         (function() { throw new TypeError( "Not a number." ); }());
+};
+
+/**
+ * GCD - Returns an Array containing the RedScale types representing the GCD.
+ * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
+ * @throws {TypeError}
+ * @export
+ */
+redscale.Ratio.prototype.gcd = function( bVal ) {
+  return bVal.redscaleType === "Ratio" ? redscale.Ratio.gcd( this, bVal ) :
+         bVal.redscaleType === "BigInteger" ? redscale.Ratio.gcd( this, bVal.toRatio() ) :
+         typeof bVal === "number" ? redscale.Ratio.gcd( this, redscale.Ratio.fromNumber( bVal ) ) :
+         (function() { throw new TypeError( "Not a number." ); }());
+};
+
+/**
+ * Equals - Returns a boolean value for whether this redscale.BigInteger is equal to bVal.
+ * @param {!redscale.BigInteger} bVal
+ * @returns {boolean}
+ * @export
+ */
+redscale.Ratio.prototype.equals = function( bVal ) {
+  return redscale.Ratio.equals( this, bVal );
+};
+
+/**
+ * Square
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.Ratio.prototype.square = function() {
+  return redscale.Ratio.square( this );
+};
+
+/**
+ * Power
+ * @param {!number} aInt
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.Ratio.prototype.pow = function( aInt ) {
+  return redscale.Ratio.pow( this, aInt );
+};
+
+/**
  * Negate - Returns the negation of the redscale.Ratio
  * @returns {!redscale.Ratio}
  * @export
@@ -32,6 +131,15 @@ redscale.Ratio.prototype.negate = function() {
  */
 redscale.Ratio.prototype.abs = function() {
   return this.signum === -1 ? this.negate() : this;
+};
+
+/**
+ * Sign - Returns the signum value.
+ * @returns {!number}
+ * @export
+ */
+redscale.Ratio.prototype.sign = function() {
+  return this.signum;
 };
 
 /**
@@ -264,7 +372,7 @@ redscale.Ratio.gcd = function( aVal, bVal ) {
  * @returns {!redscale.Ratio}
  * @export
  */
-redscale.BigInteger.square = function( aVal ) {
+redscale.Ratio.square = function( aVal ) {
   var pNum,
       pDen,
       pSim;
@@ -286,7 +394,7 @@ redscale.BigInteger.square = function( aVal ) {
  * @returns {!redscale.Ratio}
  * @export
  */
-redscale.BigInteger.pow = function( aVal, aInt ) {
+redscale.Ratio.pow = function( aVal, aInt ) {
   var pSig,
       pNum,
       pDen,
@@ -294,7 +402,7 @@ redscale.BigInteger.pow = function( aVal, aInt ) {
 
   if ( aInt < 0 ) { throw new Error( "Exponent is negative." ) }
 
-  if ( aVal.signum === 0 ) { return aInt === 0 ? redscale.BigInteger.ONE() : aVal }
+  if ( aVal.signum === 0 ) { return aInt === 0 ? redscale.Ratio.ONE() : aVal }
 
   pSig = aVal.signum < 0 && (aInt & 1) === 1 ? -1 : 1;
   pNum = redscale.arithmetic.pow( aVal.numerator, aInt );
@@ -303,6 +411,19 @@ redscale.BigInteger.pow = function( aVal, aInt ) {
   pSim = redscale.Ratio.simplify( pNum, pDen );
 
   return new redscale.Ratio( pSig, pSim[0], pSim[1] );
+};
+
+/**
+ * Equals - Returns a boolean representing whether aVal and bVal are equal.
+ * @param {!redscale.Ratio} aVal
+ * @param {!redscale.Ratio} bVal
+ * @returns {!boolean}
+ * @export
+ */
+redscale.Ratio.equals = function( aVal, bVal ) {
+  return redscale.util.compare( aVal.numerator, bVal.numerator ) === 0 &&
+         redscale.util.compare( aVal.denominator, bVal.denominator ) === 0 &&
+         aVal.signum === bVal.signum;
 };
 
 /**

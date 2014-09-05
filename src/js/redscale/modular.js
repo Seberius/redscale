@@ -301,11 +301,11 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
     var mInvDigit = redscale.modular.modInverseInt16( -oMod[0] ),
         eLen = aExpo.length,
         mLen = oMod.length,
-        wVal = eLen < 8 ? 1 : eLen < 32 ? 2 : eLen < 128 ? 3 : eLen < 512 ? 4 : eLen < 1536 ? 5 : 6,
-        wLen = 1 << wVal,
-        wMask = wLen - 1,
         wLeadingZeroes = redscale.util.intLeadingZeroes( aExpo[eLen - 1] ),
         wBits = (eLen * 16) - wLeadingZeroes,
+        wVal = wBits < 8 ? 1 : wBits < 32 ? 2 : wBits < 128 ? 3 : wBits < 512 ? 4 : wBits < 1536 ? 5 : 6,
+        wLen = 1 << wVal,
+        wMask = wLen - 1,
         wArray = new Array( wLen ),
         wBuffer,
         wBufferLen,
@@ -359,7 +359,7 @@ redscale.modular.modPowMontgomery = function( aArray, aSign, aExpo, aMod ) {
       eIndex--;
     }
 
-    while ( wBits >= wVal ) {
+    while ( wBits > wVal ) {
       var eBit = (aExpo[eIndex] >>> wShift) & 1;
 
       if ( eBit ) {
