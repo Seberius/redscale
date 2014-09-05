@@ -259,6 +259,53 @@ redscale.Ratio.gcd = function( aVal, bVal ) {
 };
 
 /**
+ * Square
+ * @param {!redscale.Ratio} aVal
+ * @returns {!redscale.Ratio}
+ * @export
+ */
+redscale.BigInteger.square = function( aVal ) {
+  var pNum,
+      pDen,
+      pSim;
+
+  if ( aVal.signum === 0 ) { return aVal }
+
+  pNum = redscale.arithmetic.square( aVal.numerator );
+  pDen = redscale.arithmetic.square( aVal.denominator );
+
+  pSim = redscale.Ratio.simplify( pNum, pDen );
+
+  return new redscale.Ratio( 1, pSim[0], pSim[1] );
+};
+
+/**
+ * Power
+ * @param {!redscale.Ratio} aVal
+ * @param {!number} aInt
+ * @returns {!redscale.Ratio}
+ * @export
+ */
+redscale.BigInteger.pow = function( aVal, aInt ) {
+  var pSig,
+      pNum,
+      pDen,
+      pSim;
+
+  if ( aInt < 0 ) { throw new Error( "Exponent is negative." ) }
+
+  if ( aVal.signum === 0 ) { return aInt === 0 ? redscale.BigInteger.ONE() : aVal }
+
+  pSig = aVal.signum < 0 && (aInt & 1) === 1 ? -1 : 1;
+  pNum = redscale.arithmetic.pow( aVal.numerator, aInt );
+  pDen = redscale.arithmetic.pow( aVal.denominator, aInt );
+
+  pSim = redscale.Ratio.simplify( pNum, pDen );
+
+  return new redscale.Ratio( pSig, pSim[0], pSim[1] );
+};
+
+/**
  * Ratio from string
  * @param {!string} aStr
  * @param {!number} radix
