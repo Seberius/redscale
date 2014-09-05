@@ -35,6 +35,27 @@ redscale.Ratio.prototype.abs = function() {
 };
 
 /**
+ * To String
+ * @param {!number} radix
+ * @returns {!string}
+ */
+redscale.Ratio.prototype.toString = function( radix ) {
+  var rDen,
+      rStr;
+
+  if ( this.signum === 0 ) { return "0" }
+
+  rStr = redscale.util.toString( this.signum, this.numerator, radix );
+
+  if ( !redscale.util.isOne( this.denominator ) ) {
+    rDen = redscale.util.toString( 1, this.denominator, radix );
+    rStr = rStr + "/" + rDen;
+  }
+
+  return rStr;
+};
+
+/**
  * Zero
  * @returns {!redscale.Ratio}
  * @constructor
