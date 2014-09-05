@@ -18,12 +18,13 @@ redscale.BigInteger = function( signum, magnitude ) {
 /**
  * Add - Returns a RedScale type representing the sum.
  * @param {!redscale.BigInteger|number} bVal - The RedScale type or number being added.
- * @returns {!redscale.BigInteger}
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
  * @throws {TypeError}
  * @export
  */
 redscale.BigInteger.prototype.add = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.add( this, bVal ) :
+         bVal.redscaleType === "Ratio" ? redscale.Ratio.add( this.toRatio(), bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.add( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -31,12 +32,13 @@ redscale.BigInteger.prototype.add = function( bVal ) {
 /**
  * Subtract - Returns a RedScale type representing the difference.
  * @param {!redscale.BigInteger|number} bVal - The RedScale type or number being subtracted.
- * @returns {!redscale.BigInteger}
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
  * @throws {TypeError}
  * @export
  */
 redscale.BigInteger.prototype.subtract = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.subtract( this, bVal ) :
+         bVal.redscaleType === "Ratio" ? redscale.Ratio.subtract( this.toRatio(), bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.subtract( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -44,12 +46,13 @@ redscale.BigInteger.prototype.subtract = function( bVal ) {
 /**
  * Multiply - Returns a RedScale type representing the product.
  * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
- * @returns {!redscale.BigInteger}
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
  * @throws {TypeError}
  * @export
  */
 redscale.BigInteger.prototype.multiply = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.multiply( this, bVal ) :
+         bVal.redscaleType === "Ratio" ? redscale.Ratio.multiply( this.toRatio(), bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.multiply( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -57,12 +60,13 @@ redscale.BigInteger.prototype.multiply = function( bVal ) {
 /**
  * Divide:Quotient - Returns a RedScale type representing the quotient.
  * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
- * @returns {!redscale.BigInteger}
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
  * @throws {TypeError}
  * @export
  */
 redscale.BigInteger.prototype.divide = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.divide( this, bVal ) :
+         bVal.redscaleType === "Ratio" ? redscale.Ratio.divide( this.toRatio(), bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.divide( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -96,12 +100,13 @@ redscale.BigInteger.prototype.divideRem = function( bVal ) {
 /**
  * GCD - Returns an Array containing the RedScale types representing the GCD.
  * @param {!redscale.BigInteger|number} bVal - A RedScale type or number.
- * @returns {!redscale.BigInteger}
+ * @returns {!redscale.BigInteger|!redscale.Ratio}
  * @throws {TypeError}
  * @export
  */
 redscale.BigInteger.prototype.gcd = function( bVal ) {
   return bVal.redscaleType === "BigInteger" ? redscale.BigInteger.gcd( this, bVal ) :
+         bVal.redscaleType === "Ratio" ? redscale.Ratio.gcd( this.toRatio(), bVal ) :
          typeof bVal === "number" ? redscale.BigInteger.gcd( this, redscale.BigInteger.fromNumber( bVal ) ) :
          (function() { throw new TypeError( "Not a number." ); }());
 };
@@ -195,6 +200,14 @@ redscale.BigInteger.prototype.valueOf = function() {
  */
 redscale.BigInteger.prototype.toNumber = function() {
   return redscale.util.toNumber( this.signum, this.magnitude );
+};
+
+/**
+ * toRatio - Returns a Ratio type representing the BigInteger value.
+ * @returns {!redscale.Ratio}
+ */
+redscale.BigInteger.prototype.toRatio = function() {
+  return new redscale.Ratio( this.signum, this.magnitude, new Int16Array( [1] ) );
 };
 
 /**
@@ -384,12 +397,32 @@ redscale.BigInteger.divideRem = function( aVal, bVal ) {
 
   quotRem = redscale.arithmetic.divide( aVal.magnitude, bVal.magnitude );
   qMag = quotRem[0];
-  qSig = qMag.length === 0 ? 0 :
-         aVal.signum === bVal.signum ? 1 : -1;
+  qSig = qMag.length === 0 ? 0 : aVal.signum === bVal.signum ? 1 : -1;
   rMag = quotRem[1];
   rSig = rMag.length === 0 ? 0 : aVal.signum;
 
   return [new redscale.BigInteger( qSig, qMag ), new redscale.BigInteger( rSig, rMag )];
+};
+
+/**
+ * Divide to Ratio
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.Ratio}
+ * @export
+ */
+redscale.BigInteger.divideRatio = function( aVal, bVal ) {
+  var qSig,
+      qSim;
+
+  if ( aVal.signum === 0 || bVal.signum === 0 ) {
+    return redscale.Ratio.ZERO();
+  }
+
+  qSig = aVal.signum * bVal.signum;
+  qSim = redscale.Ratio.simplify( aVal.magnitude, bVal.magnitude );
+
+  return new redscale.Ratio( qSig, qSim[0], qSim[1] );
 };
 
 /**
@@ -454,7 +487,7 @@ redscale.BigInteger.mod = function( aVal, mVal ) {
   var rMag,
       rSig;
 
-  if ( mVal.signum !== 1 ) { throw new Error( "RedScale: Modulus not positive." ) }
+  if ( mVal.signum !== 1 ) { throw new Error( "Modulus not positive." ) }
 
   rMag = redscale.modular.mod( aVal.magnitude, aVal.signum, mVal.magnitude );
   rSig = redscale.util.isZero( rMag ) ? 0 : 1;
@@ -472,7 +505,7 @@ redscale.BigInteger.mod = function( aVal, mVal ) {
 redscale.BigInteger.modInverse = function( aVal, mVal ) {
   var rMag;
 
-  if ( mVal.signum !== 1 ) { throw new Error( "RedScale: Modulus not positive." ) }
+  if ( mVal.signum !== 1 ) { throw new Error( "Modulus not positive." ) }
   if ( redscale.BigInteger.equals( mVal, redscale.BigInteger.ONE() ) ) { return redscale.BigInteger.ZERO() }
 
   rMag = redscale.modular.modInverse( aVal.magnitude, aVal.signum, mVal.magnitude );

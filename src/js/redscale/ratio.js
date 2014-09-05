@@ -300,16 +300,6 @@ redscale.Ratio.fromNumber = function( aVal ) {
 };
 
 /**
- * Ratio from BigInteger
- * @param {!redscale.BigInteger} aBigInt
- * @returns {!redscale.Ratio}
- * @export
- */
-redscale.Ratio.fromBigInteger = function( aBigInt ) {
-  return new redscale.Ratio( aBigInt.signum, aBigInt.magnitude, new Int16Array( [1] ) );
-};
-
-/**
  * Ratio simplification
  * @param {!Int16Array} aNum
  * @param {!Int16Array} aDen
