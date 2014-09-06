@@ -500,15 +500,18 @@ redscale.Ratio.fromNumber = function( aVal ) {
       aStrLen,
       aDecIndex;
 
+  if ( !Number.isFinite( aVal ) ) {
+    throw new Error( "Number is not finite." )
+  }
+
   if ( aVal === 0 ) {
     return redscale.Ratio.ZERO();
   }
 
   aSig = aVal > 0 ? 1 : -1;
-
   aStr = (aVal * aSig).toString();
 
-  if ( Number.isFinite( aVal ) ) {
+  if ( aVal <= 9007199254740991 ) {
     aStrLen = aStr.length;
     aDecIndex = aStr.indexOf(".");
 
@@ -521,6 +524,9 @@ redscale.Ratio.fromNumber = function( aVal ) {
       aNum = redscale.util.fromString( aStr.replace( /[.]/, ""), 10 );
       aDen = redscale.util.copyOf( redscale.decimal.POWERS_OF_TEN[aDenLen] );
     }
+  } else {
+    aNum = redscale.util.fromNumber( aVal );
+    aDen = new Int16Array( [1] );
   }
 
   return new redscale.Ratio( aSig, aNum, aDen );
