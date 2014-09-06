@@ -146,6 +146,7 @@ redscale.Ratio.prototype.sign = function() {
  * To String
  * @param {!number} radix
  * @returns {!string}
+ * @export
  */
 redscale.Ratio.prototype.toString = function( radix ) {
   var rDen,
@@ -161,6 +162,37 @@ redscale.Ratio.prototype.toString = function( radix ) {
   }
 
   return rStr;
+};
+
+/**
+ * To Mixed Number (string).
+ * @param {number} radix
+ * @returns {!string}
+ * @export
+ */
+redscale.Ratio.prototype.toMixed = function( radix ) {
+  var mQuotRem,
+      mInt,
+      mNum,
+      mDen,
+      mStr;
+
+  if ( this.signum === 0 ) { return "0" }
+
+  if ( redscale.util.isOne( this.denominator ) ) {
+    mStr = redscale.util.toString( this.signum, this.numerator, radix );
+  } else if ( redscale.util.compare( this.numerator, this.denominator ) === -1 ) {
+    mStr = this.toString( radix );
+  } else {
+    mQuotRem = redscale.arithmetic.divide( this.numerator, this.denominator );
+    mInt = redscale.util.toString( this.signum, mQuotRem[0], radix );
+    mNum = redscale.util.toString( 1, mQuotRem[1], radix );
+    mDen = redscale.util.toString( 1, this.denominator, radix );
+
+    mStr = mInt + " " + mNum + "/" + mDen;
+  }
+
+  return mStr;
 };
 
 /**
@@ -460,9 +492,36 @@ redscale.Ratio.fromString = function( aStr, radix ) {
  * @export
  */
 redscale.Ratio.fromNumber = function( aVal ) {
-  var aSig = aVal === 0 ? 0 : aVal > 0 ? 1 : -1,
-      aNum = redscale.util.fromNumber( aVal * aSig ),
+  var aSig,
+      aNum,
+      aDen,
+      aDenLen,
+      aStr,
+      aStrLen,
+      aDecIndex;
+
+  if ( aVal === 0 ) {
+    return redscale.Ratio.ZERO();
+  }
+
+  aSig = aVal > 0 ? 1 : -1;
+
+  aStr = (aVal * aSig).toString();
+
+  if ( Number.isFinite( aVal ) ) {
+    aStrLen = aStr.length;
+    aDecIndex = aStr.indexOf(".");
+
+    if ( aDecIndex < 0 ) {
+      aNum = redscale.util.fromNumber( aVal );
       aDen = new Int16Array( [1] );
+    } else {
+      aDenLen = aStrLen - aDecIndex - 1;
+
+      aNum = redscale.util.fromString( aStr.replace( /[.]/, ""), 10 );
+      aDen = redscale.util.copyOf( redscale.decimal.POWERS_OF_TEN[aDenLen] );
+    }
+  }
 
   return new redscale.Ratio( aSig, aNum, aDen );
 };
