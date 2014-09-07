@@ -1,7 +1,7 @@
 goog.provide('redscale.Ratio');
 
 /**
- * redscale.Ratio type.
+ * Ratio type.
  * @param {!number} signum
  * @param {!Int16Array} numerator
  * @param {!Int16Array} denominator
@@ -193,6 +193,25 @@ redscale.Ratio.prototype.toMixed = function( radix ) {
   }
 
   return mStr;
+};
+
+/**
+ * toBigInteger
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.Ratio.prototype.toBigInteger = function() {
+  var rSig,
+      rMag;
+
+  if ( this.signum === 0 ) {
+    return redscale.BigInteger.ZERO();
+  }
+
+  rMag = redscale.arithmetic.divide( this.numerator, this.denominator )[0];
+  rSig = redscale.util.isZero( rMag ) ? 0 : this.signum;
+
+  return new redscale.BigInteger( rSig, rMag );
 };
 
 /**

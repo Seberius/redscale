@@ -1,7 +1,7 @@
 goog.provide('redscale.BigInteger');
 
 /**
- * redscale.BigInteger type.
+ * BigInteger type.
  * @param {!number} signum - Maybe 0, 1, or -1.
  * @param {!Int16Array} magnitude - An Int16Array.
  * @constructor
