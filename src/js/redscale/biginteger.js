@@ -162,6 +162,49 @@ redscale.BigInteger.prototype.modPow = function( expoVal, mVal ) {
 };
 
 /**
+ * Shift Left
+ * @param {!number} aShift
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.prototype.shiftLeft = function( aShift ) {
+  var rSign = this.signum,
+      rVal = redscale.bitwise.shiftLeft( this.magnitude, aShift );
+
+  return redscale.BigInteger( rSign, rVal );
+};
+
+/**
+ * Shift Right
+ * @param {!number} aShift
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.prototype.shiftRight = function( aShift ) {
+  var rSign = this.signum,
+      rVal = redscale.bitwise.shiftRight( this.magnitude, this.signum, aShift );
+
+  return redscale.BigInteger( rSign, rVal );
+};
+
+/**
+ * Unsigned Shift Right
+ * @param {!number} aShift
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.prototype.unsignedShiftRight = function( aShift ) {
+  var rSign = this.signum,
+      rVal = redscale.bitwise.unsignedShiftRight( this.magnitude, this.signum, aShift ) ;
+
+  if ( rSign < 0 && aShift > 0 ) {
+    rSign = redscale.util.isZero( rVal ) ? 0 : 1;
+  }
+
+  return redscale.BigInteger( rSign, rVal );
+};
+
+/**
  * Equals - Returns a boolean value for whether this redscale.BigInteger is equal to bVal.
  * @param {!redscale.BigInteger} bVal
  * @returns {boolean}
