@@ -325,3 +325,54 @@ redscale.bitwise.andNot = function ( aArray, aSign, bArray, bSign ) {
 
   return [rSign, rArray];
 };
+
+/**
+ * Bitwise shift left
+ * @param {!Int16Array} aArray
+ * @param {!number} aShift
+ * @returns {!Int16Array}
+ */
+redscale.bitwise.shiftLeft = function( aArray, aShift ) {
+  return redscale.bitwise.bitShiftLeft( aArray, aShift, 0 );
+};
+
+/**
+ * Bitwise shift right
+ * @param {!Int16Array} aArray
+ * @param {!number} aSign
+ * @param {!number} aShift
+ * @returns {!Int16Array}
+ */
+redscale.bitwise.shiftRight = function( aArray, aSign, aShift ) {
+  var rArray = redscale.bitwise.bitShiftRight( aArray, aShift );
+
+  if ( aSign < 1 ) {
+    redscale.arithmetic.add( rArray, [1] );
+  }
+
+  return rArray;
+};
+
+/**
+ * Bitwise unsigned shift right
+ * @param {!Int16Array} aArray
+ * @param {!number} aSign
+ * @param {!number} aShift
+ * @returns {!Int16Array}
+ */
+redscale.bitwise.unsignedShiftRight = function( aArray, aSign, aShift ) {
+  var aZeroes = redscale.util.numberTrailingZeroes( aArray ) >>> 4,
+      aLen = aArray.length,
+      rArray = new Int16Array( aLen ),
+      rIndex = 0,
+      aInt;
+
+  while ( rIndex < aLen ) {
+    aInt = aArray[rIndex];
+    rArray[rIndex++] = redscale.bitwise.signedInt( aInt, aSign, aZeroes, aLen, rIndex );
+  }
+
+  rArray = redscale.bitwise.bitShiftRight( rArray, aShift );
+
+  return rArray;
+};
