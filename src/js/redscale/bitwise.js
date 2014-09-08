@@ -103,30 +103,27 @@ redscale.bitwise.signedInt = function( aInt, aSign, aZeroes, aLen, aIndex ) {
  * @returns {!Int16Array}
  */
 redscale.bitwise.toUnsignedArray = function( aArray ) {
-  var aLen = aArray.length - 1,
-      aIndex = 0,
-      rIndex = 0,
+  var aLen = aArray.length,
+      aIndex = aLen - 1,
+      rIndex,
       aSignIntCount,
       rLen,
       rArray;
 
-  while ( aIndex++ >= 0 && aArray[aIndex] === -1 ) {}
+  while ( aIndex >= 0 && aArray[aIndex] === -1 ) { aIndex--; }
 
-  aSignIntCount = aIndex;
+  aSignIntCount = aLen - aIndex - 1;
 
-  while ( aIndex++ >= 0 && aArray[aIndex] === 0 ) {}
+  while ( aIndex >= 0 && aArray[aIndex] === 0 ) { aIndex--; }
 
   rLen = aLen - aSignIntCount;
   rArray = new Int16Array( rLen + (aIndex === 0 ? 1 : 0) );
 
-  while ( rIndex < rLen ) {
+  for ( rIndex = 0; rIndex < rLen; rIndex++ ) {
     rArray[rIndex] = ~aArray[rIndex];
-    rIndex++;
   }
 
-  rIndex = 0;
-
-  while ( (rArray[rIndex++] += 1) === 0 ) {}
+  for ( rIndex = 0; (rArray[rIndex] += 1) === 0; rIndex++ ) {}
 
   return rArray;
 };
@@ -137,7 +134,7 @@ redscale.bitwise.toUnsignedArray = function( aArray ) {
  * @param {!number} aSign
  * @param {!Int16Array} bArray
  * @param {!number} bSign
- * @returns {[!number, !Int16Array]}
+ * @returns {!Int16Array}
  */
 redscale.bitwise.and = function( aArray, aSign, bArray, bSign ) {
   var aZeroes = redscale.util.numberTrailingZeroes( aArray ) >>> 4,
@@ -146,29 +143,19 @@ redscale.bitwise.and = function( aArray, aSign, bArray, bSign ) {
       bLen = bArray.length,
       rLen = Math.max( aLen, bLen ),
       rArray = new Int16Array( rLen ),
-      rSign = 1,
-      rIndex = 0,
+      rIndex,
       aInt,
       bInt;
 
-  while ( rIndex < rLen ) {
+  for ( rIndex = 0; rIndex < rLen; rIndex++ ) {
     aInt = aArray[rIndex];
     bInt = bArray[rIndex];
-    rArray[rIndex++] =
+    rArray[rIndex] =
       redscale.bitwise.signedInt( aInt, aSign, aZeroes, aLen, rIndex ) &
       redscale.bitwise.signedInt( bInt, bSign, bZeroes, bLen, rIndex );
   }
 
-  if ( rArray[rLen - 1] < 0 ) {
-    rSign = -1;
-    rArray = redscale.bitwise.toUnsignedArray( rArray );
-  }
-
-  if ( redscale.util.isZero( rArray ) ) {
-    rSign = 0;
-  }
-
-  return [rSign, rArray];
+  return rArray;
 };
 
 /**
@@ -177,7 +164,7 @@ redscale.bitwise.and = function( aArray, aSign, bArray, bSign ) {
  * @param {!number} aSign
  * @param {!Int16Array} bArray
  * @param {!number} bSign
- * @returns {[!number, !Int16Array]}
+ * @returns {!Int16Array}
  */
 redscale.bitwise.or = function( aArray, aSign, bArray, bSign ) {
   var aZeroes = redscale.util.numberTrailingZeroes( aArray ) >>> 4,
@@ -186,30 +173,19 @@ redscale.bitwise.or = function( aArray, aSign, bArray, bSign ) {
       bLen = bArray.length,
       rLen = Math.max( aLen, bLen ),
       rArray = new Int16Array( rLen ),
-      rSign = 1,
-      rIndex = 0,
+      rIndex,
       aInt,
       bInt;
 
-  while ( rIndex < rLen ) {
+  for ( rIndex = 0; rIndex < rLen; rIndex++ ) {
     aInt = aArray[rIndex];
     bInt = bArray[rIndex];
-    rArray[rIndex++] =
+    rArray[rIndex] =
       redscale.bitwise.signedInt( aInt, aSign, aZeroes, aLen, rIndex ) |
       redscale.bitwise.signedInt( bInt, bSign, bZeroes, bLen, rIndex );
   }
 
-  if ( rArray[rLen - 1] < 0 ) {
-    rSign = -1;
-    rArray = redscale.bitwise.toUnsignedArray( rArray );
-  }
-
-  if ( redscale.util.isZero( rArray ) ) {
-    rSign = 0;
-  }
-
-  return [rSign, rArray];
-
+  return rArray;
 };
 
 /**
@@ -218,7 +194,7 @@ redscale.bitwise.or = function( aArray, aSign, bArray, bSign ) {
  * @param {!number} aSign
  * @param {!Int16Array} bArray
  * @param {!number} bSign
- * @returns {[!number, !Int16Array]}
+ * @returns {!Int16Array}
  */
 redscale.bitwise.xor = function( aArray, aSign, bArray, bSign ) {
   var aZeroes = redscale.util.numberTrailingZeroes( aArray ) >>> 4,
@@ -227,63 +203,42 @@ redscale.bitwise.xor = function( aArray, aSign, bArray, bSign ) {
       bLen = bArray.length,
       rLen = Math.max( aLen, bLen ),
       rArray = new Int16Array( rLen ),
-      rSign = 1,
-      rIndex = 0,
+      rIndex,
       aInt,
       bInt;
 
-  while ( rIndex < rLen ) {
+  for ( rIndex = 0; rIndex < rLen; rIndex++ ) {
     aInt = aArray[rIndex];
     bInt = bArray[rIndex];
-    rArray[rIndex++] =
+    rArray[rIndex] =
       redscale.bitwise.signedInt( aInt, aSign, aZeroes, aLen, rIndex ) ^
       redscale.bitwise.signedInt( bInt, bSign, bZeroes, bLen, rIndex );
   }
 
-  if ( rArray[rLen - 1] < 0 ) {
-    rSign = -1;
-    rArray = redscale.bitwise.toUnsignedArray( rArray );
-  }
-
-  if ( redscale.util.isZero( rArray ) ) {
-    rSign = 0;
-  }
-
-  return [rSign, rArray];
-
+  return rArray;
 };
 
 /**
  * Bitwise not
  * @param {!Int16Array} aArray
  * @param {!number} aSign
- * @returns {[!number, !Int16Array]}
+ * @returns {!Int16Array}
  */
 redscale.bitwise.not = function( aArray, aSign ) {
   var aZeroes = redscale.util.numberTrailingZeroes( aArray ) >>> 4,
       aLen = aArray.length,
       rLen = aLen,
       rArray = new Int16Array( rLen ),
-      rSign = 1,
-      rIndex = 0,
+      rIndex,
       aInt;
 
-  while ( rIndex < rLen ) {
+  for ( rIndex = 0; rIndex < rLen; rIndex++ ) {
     aInt = aArray[rIndex];
-    rArray[rIndex++] =
+    rArray[rIndex] =
       ~redscale.bitwise.signedInt( aInt, aSign, aZeroes, aLen, rIndex );
   }
 
-  if ( rArray[rLen - 1] < 0 ) {
-    rSign = -1;
-    rArray = redscale.bitwise.toUnsignedArray( rArray );
-  }
-
-  if ( redscale.util.isZero( rArray ) ) {
-    rSign = 0;
-  }
-
-  return [rSign, rArray];
+  return rArray;
 };
 
 /**
@@ -292,7 +247,7 @@ redscale.bitwise.not = function( aArray, aSign ) {
  * @param {!number} aSign
  * @param {!Int16Array} bArray
  * @param {!number} bSign
- * @returns {[!number, !Int16Array]}
+ * @returns {!Int16Array}
  */
 redscale.bitwise.andNot = function ( aArray, aSign, bArray, bSign ) {
   var aZeroes = redscale.util.numberTrailingZeroes( aArray ) >>> 4,
@@ -301,29 +256,19 @@ redscale.bitwise.andNot = function ( aArray, aSign, bArray, bSign ) {
       bLen = bArray.length,
       rLen = Math.max( aLen, bLen ),
       rArray = new Int16Array( rLen ),
-      rSign = 1,
-      rIndex = 0,
+      rIndex,
       aInt,
       bInt;
 
-  while ( rIndex < rLen ) {
+  for ( rIndex = 0; rIndex < rLen; rIndex++ ) {
     aInt = aArray[rIndex];
     bInt = bArray[rIndex];
-    rArray[rIndex++] =
+    rArray[rIndex] =
       redscale.bitwise.signedInt( aInt, aSign, aZeroes, aLen, rIndex ) &
       ~redscale.bitwise.signedInt( bInt, bSign, bZeroes, bLen, rIndex );
   }
 
-  if ( rArray[rLen - 1] < 0 ) {
-    rSign = -1;
-    rArray = redscale.bitwise.toUnsignedArray( rArray );
-  }
-
-  if ( redscale.util.isZero( rArray ) ) {
-    rSign = 0;
-  }
-
-  return [rSign, rArray];
+  return rArray;
 };
 
 /**
@@ -346,8 +291,8 @@ redscale.bitwise.shiftLeft = function( aArray, aShift ) {
 redscale.bitwise.shiftRight = function( aArray, aSign, aShift ) {
   var rArray = redscale.bitwise.bitShiftRight( aArray, aShift );
 
-  if ( aSign < 1 ) {
-    redscale.arithmetic.add( rArray, [1] );
+  if ( aSign < 0 ) {
+    rArray = redscale.arithmetic.add( rArray, [1] );
   }
 
   return rArray;

@@ -168,10 +168,7 @@ redscale.BigInteger.prototype.modPow = function( expoVal, mVal ) {
  * @export
  */
 redscale.BigInteger.prototype.shiftLeft = function( aShift ) {
-  var rSign = this.signum,
-      rVal = redscale.bitwise.shiftLeft( this.magnitude, aShift );
-
-  return redscale.BigInteger( rSign, rVal );
+  return redscale.BigInteger.shiftLeft( this, aShift );
 };
 
 /**
@@ -181,10 +178,7 @@ redscale.BigInteger.prototype.shiftLeft = function( aShift ) {
  * @export
  */
 redscale.BigInteger.prototype.shiftRight = function( aShift ) {
-  var rSign = this.signum,
-      rVal = redscale.bitwise.shiftRight( this.magnitude, this.signum, aShift );
-
-  return redscale.BigInteger( rSign, rVal );
+  return redscale.BigInteger.shiftRight( this, aShift );
 };
 
 /**
@@ -194,14 +188,51 @@ redscale.BigInteger.prototype.shiftRight = function( aShift ) {
  * @export
  */
 redscale.BigInteger.prototype.unsignedShiftRight = function( aShift ) {
-  var rSign = this.signum,
-      rVal = redscale.bitwise.unsignedShiftRight( this.magnitude, this.signum, aShift ) ;
+  return redscale.BigInteger.unsignedShiftRight( this, aShift );
+};
 
-  if ( rSign < 0 && aShift > 0 ) {
-    rSign = redscale.util.isZero( rVal ) ? 0 : 1;
-  }
+/**
+ * Bitwise and
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ */
+redscale.BigInteger.prototype.and = function( bVal ) {
+  return redscale.BigInteger.and( this, bVal );
+};
 
-  return redscale.BigInteger( rSign, rVal );
+/**
+ * Bitwise or
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ */
+redscale.BigInteger.prototype.or = function( bVal ) {
+  return redscale.BigInteger.or( this, bVal );
+};
+
+/**
+ * Bitwise xor
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ */
+redscale.BigInteger.prototype.xor = function( bVal ) {
+  return redscale.BigInteger.xor( this, bVal );
+};
+
+/**
+ * Bitwise not
+ * @returns {!redscale.BigInteger}
+ */
+redscale.BigInteger.prototype.not = function() {
+  return redscale.BigInteger.not( this );
+};
+
+/**
+ * Bitwise andNot
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ */
+redscale.BigInteger.prototype.andNot = function( bVal ) {
+  return redscale.BigInteger.andNot( this, bVal );
 };
 
 /**
@@ -570,6 +601,166 @@ redscale.BigInteger.modPow = function( aVal, expoVal, mVal ) {
 
   rMag = redscale.modular.modPow( aVal.magnitude, aVal.signum, expoVal.magnitude, expoVal.signum, mVal.magnitude );
   rSig = 1;
+
+  return new redscale.BigInteger( rSig, rMag );
+};
+
+/**
+ * Shift Left
+ * @param {!redscale.BigInteger} aVal
+ * @param {!number} aShift
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.shiftLeft = function( aVal, aShift ) {
+  var rSign = aVal.signum,
+      rVal = redscale.bitwise.shiftLeft( aVal.magnitude, aShift );
+
+  return new redscale.BigInteger( rSign, rVal );
+};
+
+/**
+ * Shift Right
+ * @param {!redscale.BigInteger} aVal
+ * @param {!number} aShift
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.shiftRight = function( aVal, aShift ) {
+  var rSign = aVal.signum,
+      rVal = redscale.bitwise.shiftRight( aVal.magnitude, aVal.signum, aShift );
+
+  return new redscale.BigInteger( rSign, rVal );
+};
+
+/**
+ * Unsigned Shift Right
+ * @param {!redscale.BigInteger} aVal
+ * @param {!number} aShift
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.unsignedShiftRight = function( aVal, aShift ) {
+  var rSign = aVal.signum,
+      rVal = redscale.bitwise.unsignedShiftRight( aVal.magnitude, aVal.signum, aShift ) ;
+
+  if ( rSign < 0 && aShift > 0 ) {
+    rSign = redscale.util.isZero( rVal ) ? 0 : 1;
+  }
+
+  return new redscale.BigInteger( rSign, rVal );
+};
+
+/**
+ * Bitwise and
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.and = function( aVal, bVal ) {
+  var rMag = redscale.bitwise.and( aVal.magnitude, aVal.signum, bVal.magnitude, bVal.signum ),
+      rSig = 1;
+
+  if ( rMag[rMag.length - 1] < 0 ) {
+    rSig = -1;
+    rMag = redscale.bitwise.toUnsignedArray( rMag );
+  }
+
+  if ( redscale.util.isZero( rMag ) ) {
+    rSig = 0;
+  }
+
+  return new redscale.BigInteger( rSig, rMag );
+};
+
+/**
+ * Bitwise or
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.or = function( aVal, bVal ) {
+  var rMag = redscale.bitwise.or( aVal.magnitude, aVal.signum, bVal.magnitude, bVal.signum ),
+      rSig = 1;
+
+  if ( rMag[rMag.length - 1] < 0 ) {
+    rSig = -1;
+    rMag = redscale.bitwise.toUnsignedArray( rMag );
+  }
+
+  if ( redscale.util.isZero( rMag ) ) {
+    rSig = 0;
+  }
+
+  return new redscale.BigInteger( rSig, rMag );
+};
+
+/**
+ * Bitwise xor
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.xor = function( aVal, bVal ) {
+  var rMag = redscale.bitwise.xor( aVal.magnitude, aVal.signum, bVal.magnitude, bVal.signum ),
+      rSig = 1;
+
+  if ( rMag[rMag.length - 1] < 0 ) {
+    rSig = -1;
+    rMag = redscale.bitwise.toUnsignedArray( rMag );
+  }
+
+  if ( redscale.util.isZero( rMag ) ) {
+    rSig = 0;
+  }
+
+  return new redscale.BigInteger( rSig, rMag );
+};
+
+/**
+ * Bitwise not
+ * @param {!redscale.BigInteger} aVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.not = function( aVal ) {
+  var rMag = redscale.bitwise.not( aVal.magnitude, aVal.signum ),
+      rSig = 1;
+
+  if ( rMag[rMag.length - 1] < 0 ) {
+    rSig = -1;
+    rMag = redscale.bitwise.toUnsignedArray( rMag );
+  }
+
+  if ( redscale.util.isZero( rMag ) ) {
+    rSig = 0;
+  }
+
+  return new redscale.BigInteger( rSig, rMag );
+};
+
+/**
+ * Bitwise andNot
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.andNot = function( aVal, bVal ) {
+  var rMag = redscale.bitwise.andNot( aVal.magnitude, aVal.signum, bVal.magnitude, bVal.signum ),
+      rSig = 1;
+
+  if ( rMag[rMag.length - 1] < 0 ) {
+    rSig = -1;
+    rMag = redscale.bitwise.toUnsignedArray( rMag );
+  }
+
+  if ( redscale.util.isZero( rMag ) ) {
+    rSig = 0;
+  }
 
   return new redscale.BigInteger( rSig, rMag );
 };
