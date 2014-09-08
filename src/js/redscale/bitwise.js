@@ -82,10 +82,6 @@ redscale.bitwise.bitShiftRight = function( srcArray, rightShift ) {
  * @returns {!number}
  */
 redscale.bitwise.signedInt = function( aInt, aSign, aZeroes, aLen, aIndex ) {
-  if ( aIndex < 0 ) {
-    return 0;
-  }
-
   if ( aIndex >= aLen ) {
     return aSign < 0 ? 65535 : 0;
   }
@@ -106,7 +102,7 @@ redscale.bitwise.signedInt = function( aInt, aSign, aZeroes, aLen, aIndex ) {
  * @param {!Int16Array} aArray
  * @returns {!Int16Array}
  */
-redscale.bitwise.unsignedArray = function( aArray ) {
+redscale.bitwise.toUnsignedArray = function( aArray ) {
   var aLen = aArray.length - 1,
       aIndex = 0,
       rIndex = 0,
@@ -165,7 +161,7 @@ redscale.bitwise.and = function( aArray, aSign, bArray, bSign ) {
 
   if ( rArray[rLen - 1] < 0 ) {
     rSign = -1;
-    rArray = redscale.bitwise.unsignedArray( rArray );
+    rArray = redscale.bitwise.toUnsignedArray( rArray );
   }
 
   if ( redscale.util.isZero( rArray ) ) {
@@ -205,7 +201,7 @@ redscale.bitwise.or = function( aArray, aSign, bArray, bSign ) {
 
   if ( rArray[rLen - 1] < 0 ) {
     rSign = -1;
-    rArray = redscale.bitwise.unsignedArray( rArray );
+    rArray = redscale.bitwise.toUnsignedArray( rArray );
   }
 
   if ( redscale.util.isZero( rArray ) ) {
@@ -246,7 +242,7 @@ redscale.bitwise.xor = function( aArray, aSign, bArray, bSign ) {
 
   if ( rArray[rLen - 1] < 0 ) {
     rSign = -1;
-    rArray = redscale.bitwise.unsignedArray( rArray );
+    rArray = redscale.bitwise.toUnsignedArray( rArray );
   }
 
   if ( redscale.util.isZero( rArray ) ) {
@@ -280,7 +276,7 @@ redscale.bitwise.not = function( aArray, aSign ) {
 
   if ( rArray[rLen - 1] < 0 ) {
     rSign = -1;
-    rArray = redscale.bitwise.unsignedArray( rArray );
+    rArray = redscale.bitwise.toUnsignedArray( rArray );
   }
 
   if ( redscale.util.isZero( rArray ) ) {
@@ -320,7 +316,7 @@ redscale.bitwise.andNot = function ( aArray, aSign, bArray, bSign ) {
 
   if ( rArray[rLen - 1] < 0 ) {
     rSign = -1;
-    rArray = redscale.bitwise.unsignedArray( rArray );
+    rArray = redscale.bitwise.toUnsignedArray( rArray );
   }
 
   if ( redscale.util.isZero( rArray ) ) {
