@@ -74,7 +74,7 @@ redscale.bitwise.bitShiftRight = function( srcArray, rightShift ) {
 
 /**
  * Signed Int
- * @param {!Number} aInt
+ * @param {!number} aInt
  * @param {!number} aSign
  * @param {!number} aZeroes
  * @param {!number} aLen
