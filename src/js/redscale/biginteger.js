@@ -290,7 +290,7 @@ redscale.BigInteger.prototype.toRatio = function() {
  * @export
  */
 redscale.BigInteger.prototype.negate = function() {
-  return new redscale.BigInteger( this.signum * -1, this.magnitude );
+  return new redscale.BigInteger( this.signum === 0 ? 0 : this.signum * -1, this.magnitude );
 };
 
 /**
