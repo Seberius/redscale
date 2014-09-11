@@ -1,5 +1,8 @@
 goog.provide('redscale.bitwise');
 
+goog.require( 'redscale.util' );
+goog.require( 'redscale.arithmetic' );
+
 /**
  * Array Bit Shift Left - Shifts the source array left given bits.
  *     Will also grow array by at least leftShift / 16 + extraZeroes, a feature for Knuth Division.

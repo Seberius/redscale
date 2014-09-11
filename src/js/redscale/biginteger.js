@@ -1,4 +1,9 @@
-goog.provide('redscale.BigInteger');
+goog.provide( 'redscale.BigInteger' );
+
+goog.require( 'redscale.util' );
+goog.require( 'redscale.arithmetic' );
+goog.require( 'redscale.modular' );
+goog.require( 'redscale.bitwise' );
 
 /**
  * BigInteger type.

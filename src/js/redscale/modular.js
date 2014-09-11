@@ -1,5 +1,9 @@
 goog.provide('redscale.modular');
 
+goog.require( 'redscale.util' );
+goog.require( 'redscale.arithmetic' );
+goog.require( 'redscale.bitwise' );
+
 /**
  * Mod
  * @param {!Int16Array} aArray
