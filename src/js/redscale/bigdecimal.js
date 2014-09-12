@@ -174,3 +174,27 @@ redscale.BigDecimal.multiply = function( aVal, bVal ) {
 
   return new redscale.BigDecimal( rSign, rSignificand, rExpo, 0 );
 };
+
+/**
+ * Square
+ * @param {!redscale.BigDecimal} aVal
+ * @returns {!redscale.BigDecimal}
+ * @export
+ */
+redscale.BigDecimal.square = function( aVal ) {
+  var rSign,
+      rSignificand,
+      rExpo;
+
+  rExpo = aVal.exponent * 2;
+
+  if ( aVal.signum === 0 ) {
+    rSign = 0;
+    rSignificand = new Int16Array( 0 );
+  } else {
+    rSign = 1;
+    rSignificand = redscale.arithmetic.square( aVal.significand );
+  }
+
+  return new redscale.BigDecimal( rSign, rSignificand, rExpo, 0 );
+};
