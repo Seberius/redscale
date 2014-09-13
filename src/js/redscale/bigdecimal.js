@@ -41,6 +41,26 @@ redscale.BigDecimal.prototype.abs = function() {
 };
 
 /**
+ * ZERO - Returns a redscale.BigInteger equal to 0.
+ * @returns {!redscale.BigDecimal}
+ * @constructor
+ * @export
+ */
+redscale.BigDecimal.ZERO = function() {
+  return new redscale.BigDecimal( 0, new Int16Array( 0 ), 0, 0 );
+};
+
+/**
+ * ONE - Returns a redscale.BigDecimal equal to 1.
+ * @returns {!redscale.BigDecimal}
+ * @constructor
+ * @export
+ */
+redscale.BigDecimal.ONE = function() {
+  return new redscale.BigDecimal( 1, new Int16Array( [1] ), 0, 0 );
+};
+
+/**
  * Add
  * @param {!redscale.BigDecimal} aVal
  * @param {!redscale.BigDecimal} bVal
@@ -195,6 +215,29 @@ redscale.BigDecimal.square = function( aVal ) {
     rSign = 1;
     rSignificand = redscale.arithmetic.square( aVal.significand );
   }
+
+  return new redscale.BigDecimal( rSign, rSignificand, rExpo, 0 );
+};
+
+/**
+ * Power
+ * @param {!redscale.BigDecimal} aVal
+ * @param {!number} eInt
+ * @returns {!redscale.BigDecimal}
+ * @export
+ */
+redscale.BigDecimal.pow = function( aVal, eInt ) {
+  var rSign,
+      rSignificand,
+      rExpo;
+
+  if ( eInt < 0 ) { throw new Error( "Exponent is negative." ) }
+
+  if ( aVal.signum === 0 ) { return eInt === 0 ? redscale.BigDecimal.ONE() : aVal }
+
+  rSign = aVal.sign < 0 && (eInt & 1) === 1 ? -1 : 1;
+  rExpo = aVal.exponent * eInt;
+  rSignificand = redscale.arithmetic.pow( aVal.significand, eInt );
 
   return new redscale.BigDecimal( rSign, rSignificand, rExpo, 0 );
 };

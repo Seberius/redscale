@@ -537,20 +537,20 @@ redscale.BigInteger.square = function( aVal ) {
 /**
  * Power
  * @param {!redscale.BigInteger} aVal
- * @param {!number} aNum
+ * @param {!number} eInt
  * @returns {!redscale.BigInteger}
  * @export
  */
-redscale.BigInteger.pow = function( aVal, aNum ) {
+redscale.BigInteger.pow = function( aVal, eInt ) {
   var pSign,
       pArray;
 
-  if ( aNum < 0 ) { throw new Error( "Exponent is negative." ) }
+  if ( eInt < 0 ) { throw new Error( "Exponent is negative." ) }
 
-  if ( aVal.signum === 0 ) { return aNum === 0 ? redscale.BigInteger.ONE() : aVal }
+  if ( aVal.signum === 0 ) { return eInt === 0 ? redscale.BigInteger.ONE() : aVal }
 
-  pSign = aVal.signum < 0 && (aNum & 1) === 1 ? -1 : 1;
-  pArray = redscale.arithmetic.pow( aVal.magnitude, aNum );
+  pSign = aVal.signum < 0 && (eInt & 1) === 1 ? -1 : 1;
+  pArray = redscale.arithmetic.pow( aVal.magnitude, eInt );
 
   return new redscale.BigInteger( pSign, pArray );
 };
