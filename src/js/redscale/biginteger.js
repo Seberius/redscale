@@ -771,6 +771,21 @@ redscale.BigInteger.andNot = function( aVal, bVal ) {
 };
 
 /**
+ *
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!number}
+ * @export
+ */
+redscale.BigInteger.compareTo = function( aVal, bVal ) {
+  if ( aVal.signum !== bVal.signum ) {
+    return aVal.signum > bVal.signum ? 1 : -1;
+  }
+
+  return redscale.util.compare( aVal.magnitude, bVal.magnitude );
+};
+
+/**
  * Equals - Returns a boolean representing whether aVal and bVal are equal.
  * @param {!redscale.BigInteger} aVal
  * @param {!redscale.BigInteger} bVal
@@ -780,6 +795,36 @@ redscale.BigInteger.andNot = function( aVal, bVal ) {
 redscale.BigInteger.equals = function( aVal, bVal ) {
   return redscale.util.compare( aVal.magnitude, bVal.magnitude ) === 0 &&
          aVal.signum === bVal.signum;
+};
+
+/**
+ * Max
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.max = function( aVal, bVal ) {
+  if ( aVal.signum !== bVal.signum ) {
+    return aVal.signum > bVal.signum ? aVal : bVal;
+  }
+
+  return redscale.util.compare( aVal.magnitude, bVal.magnitude ) < 0 ? bVal : aVal;
+};
+
+/**
+ * Min
+ * @param {!redscale.BigInteger} aVal
+ * @param {!redscale.BigInteger} bVal
+ * @returns {!redscale.BigInteger}
+ * @export
+ */
+redscale.BigInteger.min = function( aVal, bVal ) {
+  if ( aVal.signum !== bVal.signum ) {
+    return aVal.signum < bVal.signum ? aVal : bVal;
+  }
+
+  return redscale.util.compare( aVal.magnitude, bVal.magnitude ) > 0 ? bVal : aVal;
 };
 
 /**

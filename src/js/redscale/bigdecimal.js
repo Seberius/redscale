@@ -241,3 +241,60 @@ redscale.BigDecimal.pow = function( aVal, eInt ) {
 
   return new redscale.BigDecimal( rSign, rSignificand, rExpo, 0 );
 };
+
+/**
+ *
+ * @param {!redscale.BigDecimal} aVal
+ * @param {!redscale.BigDecimal} bVal
+ * @returns {!number}
+ * @export
+ */
+redscale.BigDecimal.compareTo = function( aVal, bVal ) {
+  if ( aVal.signum !== bVal.signum ) {
+    return aVal.signum > bVal.signum ? 1 : -1;
+  }
+
+  return redscale.util.compare( aVal.significand, bVal.significand );
+};
+
+/**
+ * Equals - Returns a boolean representing whether aVal and bVal are equal.
+ * @param {!redscale.BigDecimal} aVal
+ * @param {!redscale.BigDecimal} bVal
+ * @returns {!boolean}
+ * @export
+ */
+redscale.BigDecimal.equals = function( aVal, bVal ) {
+  return redscale.util.compare( aVal.significand, bVal.significand ) === 0 &&
+    aVal.signum === bVal.signum;
+};
+
+/**
+ * Max
+ * @param {!redscale.BigDecimal} aVal
+ * @param {!redscale.BigDecimal} bVal
+ * @returns {!redscale.BigDecimal}
+ * @export
+ */
+redscale.BigDecimal.max = function( aVal, bVal ) {
+  if ( aVal.signum !== bVal.signum ) {
+    return aVal.signum > bVal.signum ? aVal : bVal;
+  }
+
+  return redscale.util.compare( aVal.significand, bVal.significand ) < 0 ? bVal : aVal;
+};
+
+/**
+ * Min
+ * @param {!redscale.BigDecimal} aVal
+ * @param {!redscale.BigDecimal} bVal
+ * @returns {!redscale.BigDecimal}
+ * @export
+ */
+redscale.BigDecimal.min = function( aVal, bVal ) {
+  if ( aVal.signum !== bVal.signum ) {
+    return aVal.signum < bVal.signum ? aVal : bVal;
+  }
+
+  return redscale.util.compare( aVal.significand, bVal.significand ) > 0 ? bVal : aVal;
+};

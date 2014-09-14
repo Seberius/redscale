@@ -293,6 +293,7 @@ redscale.util.compare = function( aArray, bArray ) {
 
   if ( aLen > bLen ) { return 1; }
   if ( aLen < bLen ) { return -1; }
+  if ( aLen === 0 ) { return 0; }
 
   for ( aIndex = aLen - 1; aIndex >= 0; aIndex-- ) {
     var aVal = (aArray[aIndex] & redscale.util.INT16_MASK),
