@@ -235,9 +235,9 @@ redscale.BigDecimal.pow = function( aVal, eInt ) {
 
   if ( aVal.signum === 0 ) { return eInt === 0 ? redscale.BigDecimal.ONE() : aVal }
 
-  rSign = aVal.sign < 0 && (eInt & 1) === 1 ? -1 : 1;
-  rExpo = aVal.exponent * eInt;
+  rSign = aVal.signum < 0 && (eInt & 1) === 1 ? -1 : 1;
   rSignificand = redscale.arithmetic.pow( aVal.significand, eInt );
+  rExpo = aVal.exponent * eInt;
 
   return new redscale.BigDecimal( rSign, rSignificand, rExpo, 0 );
 };

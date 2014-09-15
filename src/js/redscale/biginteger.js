@@ -778,11 +778,16 @@ redscale.BigInteger.andNot = function( aVal, bVal ) {
  * @export
  */
 redscale.BigInteger.compareTo = function( aVal, bVal ) {
+  var rInt;
+
   if ( aVal.signum !== bVal.signum ) {
     return aVal.signum > bVal.signum ? 1 : -1;
   }
 
-  return redscale.util.compare( aVal.magnitude, bVal.magnitude );
+  rInt = redscale.util.compare( aVal.magnitude, bVal.magnitude );
+  rInt = rInt === 0 ? 0 : rInt * aVal.signum;
+
+  return rInt;
 };
 
 /**
@@ -805,11 +810,11 @@ redscale.BigInteger.equals = function( aVal, bVal ) {
  * @export
  */
 redscale.BigInteger.max = function( aVal, bVal ) {
-  if ( aVal.signum !== bVal.signum ) {
-    return aVal.signum > bVal.signum ? aVal : bVal;
-  }
+  var rInt;
 
-  return redscale.util.compare( aVal.magnitude, bVal.magnitude ) < 0 ? bVal : aVal;
+  rInt = redscale.BigInteger.compareTo( aVal, bVal );
+
+  return rInt < 0 ? bVal : aVal;
 };
 
 /**
@@ -820,11 +825,11 @@ redscale.BigInteger.max = function( aVal, bVal ) {
  * @export
  */
 redscale.BigInteger.min = function( aVal, bVal ) {
-  if ( aVal.signum !== bVal.signum ) {
-    return aVal.signum < bVal.signum ? aVal : bVal;
-  }
+  var rInt;
 
-  return redscale.util.compare( aVal.magnitude, bVal.magnitude ) > 0 ? bVal : aVal;
+  rInt = redscale.BigInteger.compareTo( aVal, bVal );
+
+  return rInt > 0 ? bVal : aVal;
 };
 
 /**
