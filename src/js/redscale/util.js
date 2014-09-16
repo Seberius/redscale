@@ -308,6 +308,20 @@ redscale.util.compare = function( aArray, bArray ) {
 };
 
 /**
+ * Compare BigDecimal Arrays
+ * @param {!Int16Array} aArray
+ * @param {!number} aExpo
+ * @param {!Int16Array} bArray
+ * @param {!number} bExpo
+ * @returns {!number}
+ */
+redscale.util.compareExpo = function( aArray, aExpo, bArray, bExpo ) {
+  var eDiff = aExpo - bExpo;
+
+  return redscale.util.compare( aArray, bArray );
+};
+
+/**
  * toInt32 - Returns a number equal to the Unsigned 32bit value of
  *     the least significant integers of an array.
  * @param {!Int16Array} aArray

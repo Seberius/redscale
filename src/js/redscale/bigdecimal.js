@@ -41,7 +41,7 @@ redscale.BigDecimal.prototype.abs = function() {
 };
 
 /**
- * ZERO - Returns a redscale.BigInteger equal to 0.
+ * ZERO - Returns a redscale.BigDecimal equal to 0.
  * @returns {!redscale.BigDecimal}
  * @constructor
  * @export
@@ -250,11 +250,16 @@ redscale.BigDecimal.pow = function( aVal, eInt ) {
  * @export
  */
 redscale.BigDecimal.compareTo = function( aVal, bVal ) {
+  var rInt;
+
   if ( aVal.signum !== bVal.signum ) {
     return aVal.signum > bVal.signum ? 1 : -1;
   }
 
-  return redscale.util.compare( aVal.significand, bVal.significand );
+  rInt = redscale.util.compare( aVal.magnitude, bVal.magnitude );
+  rInt = rInt === 0 ? 0 : rInt * aVal.signum;
+
+  return rInt;
 };
 
 /**
@@ -265,7 +270,7 @@ redscale.BigDecimal.compareTo = function( aVal, bVal ) {
  * @export
  */
 redscale.BigDecimal.equals = function( aVal, bVal ) {
-  return redscale.util.compare( aVal.significand, bVal.significand ) === 0 &&
+  return redscale.util.compare( aVal.magnitude, bVal.magnitude ) === 0 &&
     aVal.signum === bVal.signum;
 };
 
@@ -277,11 +282,11 @@ redscale.BigDecimal.equals = function( aVal, bVal ) {
  * @export
  */
 redscale.BigDecimal.max = function( aVal, bVal ) {
-  if ( aVal.signum !== bVal.signum ) {
-    return aVal.signum > bVal.signum ? aVal : bVal;
-  }
+  var rInt;
 
-  return redscale.util.compare( aVal.significand, bVal.significand ) < 0 ? bVal : aVal;
+  rInt = redscale.BigDecimal.compareTo( aVal, bVal );
+
+  return rInt < 0 ? bVal : aVal;
 };
 
 /**
@@ -292,9 +297,9 @@ redscale.BigDecimal.max = function( aVal, bVal ) {
  * @export
  */
 redscale.BigDecimal.min = function( aVal, bVal ) {
-  if ( aVal.signum !== bVal.signum ) {
-    return aVal.signum < bVal.signum ? aVal : bVal;
-  }
+  var rInt;
 
-  return redscale.util.compare( aVal.significand, bVal.significand ) > 0 ? bVal : aVal;
+  rInt = redscale.BigDecimal.compareTo( aVal, bVal );
+
+  return rInt > 0 ? bVal : aVal;
 };
