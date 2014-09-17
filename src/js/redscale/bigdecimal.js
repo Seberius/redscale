@@ -243,7 +243,7 @@ redscale.BigDecimal.pow = function( aVal, eInt ) {
 };
 
 /**
- *
+ * Compare To
  * @param {!redscale.BigDecimal} aVal
  * @param {!redscale.BigDecimal} bVal
  * @returns {!number}
@@ -256,7 +256,7 @@ redscale.BigDecimal.compareTo = function( aVal, bVal ) {
     return aVal.signum > bVal.signum ? 1 : -1;
   }
 
-  rInt = redscale.util.compare( aVal.magnitude, bVal.magnitude );
+  rInt = redscale.util.compareExpo( aVal.significand, aVal.exponent, bVal.significand, bVal.exponent );
   rInt = rInt === 0 ? 0 : rInt * aVal.signum;
 
   return rInt;
@@ -270,7 +270,7 @@ redscale.BigDecimal.compareTo = function( aVal, bVal ) {
  * @export
  */
 redscale.BigDecimal.equals = function( aVal, bVal ) {
-  return redscale.util.compare( aVal.magnitude, bVal.magnitude ) === 0 &&
+  return redscale.util.compareExpo( aVal.significand, aVal.exponent, bVal.significand, bVal.exponent ) === 0 &&
     aVal.signum === bVal.signum;
 };
 

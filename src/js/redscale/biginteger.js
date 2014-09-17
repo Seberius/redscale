@@ -771,7 +771,7 @@ redscale.BigInteger.andNot = function( aVal, bVal ) {
 };
 
 /**
- *
+ * Compare To
  * @param {!redscale.BigInteger} aVal
  * @param {!redscale.BigInteger} bVal
  * @returns {!number}
