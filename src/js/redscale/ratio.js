@@ -217,22 +217,18 @@ redscale.Ratio.prototype.toBigInteger = function() {
 /**
  * Zero
  * @returns {!redscale.Ratio}
- * @constructor
+ * @const
  * @export
  */
-redscale.Ratio.ZERO = function() {
-  return new redscale.Ratio( 0, new Int16Array( 0 ), new Int16Array( 0 ) );
-};
+redscale.Ratio.ZERO =  new redscale.Ratio( 0, new Int16Array( 0 ), new Int16Array( 0 ) );
 
 /**
  * One
  * @returns {!redscale.Ratio}
- * @constructor
+ * @const
  * @export
  */
-redscale.Ratio.ONE = function() {
-  return new redscale.Ratio( 1, new Int16Array( [1] ), new Int16Array( [1] ) );
-};
+redscale.Ratio.ONE = new redscale.Ratio( 1, new Int16Array( [1] ), new Int16Array( [1] ) );
 
 /**
  * Add
@@ -273,7 +269,7 @@ redscale.Ratio.add = function( aVal, bVal ) {
     abNumComp = redscale.util.compare( aNum, bNum );
 
     if ( abNumComp === 0 ) {
-      return redscale.Ratio.ZERO();
+      return redscale.Ratio.ZERO;
     } else if ( abNumComp > 0 ) {
       sSig = abNumComp === aVal.signum ? 1 : -1;
       sNum = redscale.arithmetic.subtract( aNum, bNum );
@@ -327,7 +323,7 @@ redscale.Ratio.subtract = function( aVal, bVal ) {
     abNumComp = redscale.util.compare( aNum, bNum );
 
     if ( abNumComp === 0 ) {
-      return redscale.Ratio.ZERO();
+      return redscale.Ratio.ZERO;
     } else if ( abNumComp > 0 ) {
       dSig = abNumComp === aVal.signum ? 1 : -1;
       dNum = redscale.arithmetic.subtract( aNum, bNum );
@@ -356,7 +352,7 @@ redscale.Ratio.multiply = function( aVal, bVal ) {
       pSim;
 
   if ( aVal.signum === 0 || bVal.signum === 0 ) {
-    return redscale.Ratio.ZERO();
+    return redscale.Ratio.ZERO;
   }
 
   pSig = aVal.signum * bVal.signum;
@@ -382,7 +378,7 @@ redscale.Ratio.divide = function( aVal, bVal ) {
       qSim;
 
   if ( aVal.signum === 0 || bVal.signum === 0 ) {
-    return redscale.Ratio.ZERO();
+    return redscale.Ratio.ZERO;
   }
 
   qSig = aVal.signum * bVal.signum;
@@ -453,7 +449,7 @@ redscale.Ratio.pow = function( aVal, aInt ) {
 
   if ( aInt < 0 ) { throw new Error( "Exponent is negative." ) }
 
-  if ( aVal.signum === 0 ) { return aInt === 0 ? redscale.Ratio.ONE() : aVal }
+  if ( aVal.signum === 0 ) { return aInt === 0 ? redscale.Ratio.ONE : aVal }
 
   pSig = aVal.signum < 0 && (aInt & 1) === 1 ? -1 : 1;
   pNum = redscale.arithmetic.pow( aVal.numerator, aInt );
@@ -496,7 +492,7 @@ redscale.Ratio.fromString = function( aStr, radix ) {
   leadingZeroes = aStr.match( /[0]+/ );
 
   if ( leadingZeroes === null || leadingZeroes.index !== 0 ) { leadingZeroes = [""]; }
-  if ( leadingZeroes[0].length === aStrNum[0].length ) { return redscale.Ratio.ZERO() }
+  if ( leadingZeroes[0].length === aStrNum[0].length ) { return redscale.Ratio.ZERO }
 
   aSig = aStr.indexOf( "-" ) === 0 ? -1 : 1;
   aNum = redscale.util.fromString( aStrNum[0].slice( leadingZeroes[0].length ), aRadix );
@@ -524,7 +520,7 @@ redscale.Ratio.fromNumber = function( aVal ) {
   }
 
   if ( aVal === 0 ) {
-    return redscale.Ratio.ZERO();
+    return redscale.Ratio.ZERO;
   }
 
   aSig = aVal > 0 ? 1 : -1;

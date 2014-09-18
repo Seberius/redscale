@@ -1,7 +1,5 @@
 goog.provide('redscale.util');
 
-goog.require( 'redscale.arithmetic' );
-
 /**
  * Int16 Mask
  * @type {number}

@@ -43,22 +43,82 @@ redscale.BigDecimal.prototype.abs = function() {
 /**
  * ZERO - Returns a redscale.BigDecimal equal to 0.
  * @returns {!redscale.BigDecimal}
- * @constructor
+ * @const
  * @export
  */
-redscale.BigDecimal.ZERO = function() {
-  return new redscale.BigDecimal( 0, new Int16Array( 0 ), 0, 0 );
-};
+redscale.BigDecimal.ZERO = new redscale.BigDecimal( 0, new Int16Array( 0 ), 0, 0 );
 
 /**
  * ONE - Returns a redscale.BigDecimal equal to 1.
  * @returns {!redscale.BigDecimal}
- * @constructor
+ * @const
  * @export
  */
-redscale.BigDecimal.ONE = function() {
-  return new redscale.BigDecimal( 1, new Int16Array( [1] ), 0, 0 );
-};
+redscale.BigDecimal.ONE = new redscale.BigDecimal( 1, new Int16Array( [1] ), 0, 0 );
+
+/**
+ * Rounding Mode - Up
+ * @type {!number}
+ * @const
+ * @export
+ */
+redscale.BigDecimal.ROUND_UP = 0;
+
+/**
+ * Rounding Mode - Down
+ * @type {!number}
+ * @const
+ * @export
+ */
+redscale.BigDecimal.ROUND_DOWN = 1;
+
+/**
+ * Rounding Mode - Ceiling
+ * @type {!number}
+ * @const
+ * @export
+ */
+redscale.BigDecimal.ROUND_CEILING = 2;
+
+/**
+ * Rounding Mode - Floor
+ * @type {!number}
+ * @const
+ * @export
+ */
+redscale.BigDecimal.ROUND_FLOOR = 3;
+
+/**
+ * Rounding Mode - Half Up
+ * @type {!number}
+ * @const
+ * @export
+ */
+redscale.BigDecimal.ROUND_HALF_UP = 4;
+
+/**
+ * Rounding Mode - Half Down
+ * @type {!number}
+ * @const
+ * @export
+ */
+redscale.BigDecimal.ROUND_HALF_DOWN = 5;
+
+/**
+ * Rounding Mode - Half Even
+ * @type {!number}
+ * @const
+ * @export
+ */
+redscale.BigDecimal.ROUND_HALF_EVEN = 6;
+
+/**
+ * Rounding Mode - Unnecessary
+ * @type {!number}
+ * @const
+ * @export
+ */
+redscale.BigDecimal.ROUND_UNNECESSARY = 7;
 
 /**
  * Add

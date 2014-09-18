@@ -1,8 +1,5 @@
 goog.provide('redscale.arithmetic');
 
-goog.require( 'redscale.util' );
-goog.require( 'redscale.bitwise' );
-
 /**
  * Add - Returns an array representation of the sum.
  * @param {!Int16Array} aArray

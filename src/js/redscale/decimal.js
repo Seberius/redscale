@@ -16,13 +16,16 @@ redscale.decimal.POWERS_OF_TEN =
  */
 redscale.decimal.genPowerOfTen = function( aInt ) {
   var rArray,
+      rBase,
       aSqr;
 
   if ( aInt <= 16 ) {
     return redscale.decimal.POWERS_OF_TEN[aInt];
   }
 
+
   rArray = redscale.decimal.POWERS_OF_TEN[16];
+  rBase = redscale.decimal.POWERS_OF_TEN[16];
   aInt -= 16;
   aSqr = 16;
 
@@ -34,6 +37,7 @@ redscale.decimal.genPowerOfTen = function( aInt ) {
 
   while ( aInt > 16 ) {
     rArray = redscale.arithmetic.multiply( rArray, rBase );
+    aInt -= 16;
   }
 
   if ( aInt ) {

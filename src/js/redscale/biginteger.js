@@ -1,10 +1,5 @@
 goog.provide( 'redscale.BigInteger' );
 
-goog.require( 'redscale.util' );
-goog.require( 'redscale.arithmetic' );
-goog.require( 'redscale.modular' );
-goog.require( 'redscale.bitwise' );
-
 /**
  * BigInteger type.
  * @param {!number} signum - Maybe 0, 1, or -1.
@@ -319,22 +314,18 @@ redscale.BigInteger.prototype.sign = function() {
 /**
  * ZERO - Returns a redscale.BigInteger equal to 0.
  * @returns {!redscale.BigInteger}
- * @constructor
+ * @const
  * @export
  */
-redscale.BigInteger.ZERO = function() {
-  return new redscale.BigInteger( 0, new Int16Array( 0 ) );
-};
+redscale.BigInteger.ZERO = new redscale.BigInteger( 0, new Int16Array( 0 ) );
 
 /**
  * ONE - Returns a redscale.BigInteger equal to 1.
  * @returns {!redscale.BigInteger}
- * @constructor
+ * @const
  * @export
  */
-redscale.BigInteger.ONE = function() {
-  return new redscale.BigInteger( 1, new Int16Array( [1] ) );
-};
+redscale.BigInteger.ONE = new redscale.BigInteger( 1, new Int16Array( [1] ) );
 
 /**
  * Add - Returns redscale.BigInteger representation of the sum.
@@ -495,7 +486,7 @@ redscale.BigInteger.divideRatio = function( aVal, bVal ) {
       qSim;
 
   if ( aVal.signum === 0 || bVal.signum === 0 ) {
-    return redscale.Ratio.ZERO();
+    return redscale.Ratio.ZERO;
   }
 
   qSig = aVal.signum * bVal.signum;
@@ -547,7 +538,7 @@ redscale.BigInteger.pow = function( aVal, eInt ) {
 
   if ( eInt < 0 ) { throw new Error( "Exponent is negative." ) }
 
-  if ( aVal.signum === 0 ) { return eInt === 0 ? redscale.BigInteger.ONE() : aVal }
+  if ( aVal.signum === 0 ) { return eInt === 0 ? redscale.BigInteger.ONE : aVal }
 
   pSign = aVal.signum < 0 && (eInt & 1) === 1 ? -1 : 1;
   pArray = redscale.arithmetic.pow( aVal.magnitude, eInt );
@@ -585,7 +576,7 @@ redscale.BigInteger.modInverse = function( aVal, mVal ) {
   var rMag;
 
   if ( mVal.signum !== 1 ) { throw new Error( "Modulus not positive." ) }
-  if ( redscale.BigInteger.equals( mVal, redscale.BigInteger.ONE() ) ) { return redscale.BigInteger.ZERO() }
+  if ( redscale.BigInteger.equals( mVal, redscale.BigInteger.ONE ) ) { return redscale.BigInteger.ZERO; }
 
   rMag = redscale.modular.modInverse( aVal.magnitude, aVal.signum, mVal.magnitude );
 
@@ -851,7 +842,7 @@ redscale.BigInteger.fromString = function( aStr, radix ) {
   leadingZeroes = aStr.match( /[0]+/ );
 
   if ( leadingZeroes === null || leadingZeroes.index !== 0 ) { leadingZeroes = [""]; }
-  if ( leadingZeroes[0].length === aStrMag[0].length ) { return redscale.BigInteger.ZERO() }
+  if ( leadingZeroes[0].length === aStrMag[0].length ) { return redscale.BigInteger.ZERO; }
 
   aMag = redscale.util.fromString( aStrMag[0].slice( leadingZeroes[0].length ), aRadix );
   aSig = aStr.indexOf( "-" ) === 0 ? -1 : 1;
