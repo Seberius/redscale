@@ -281,6 +281,42 @@ redscale.util.trimLeadingZeroes = function( srcArray ) {
 };
 
 /**
+ * Bit Length
+ * @param {!Int16Array} aArray
+ * @returns {!number}
+ */
+redscale.util.bitLength = function( aArray ) {
+  var aLen = aArray.length,
+      aZeroes = redscale.util.intLeadingZeroes( aArray[aLen - 1] );
+
+  return (aLen * 16) - aZeroes;
+};
+
+
+/**
+ * Decimal Length
+ * @param {!Int16Array} aArray
+ * @returns {!number}
+ */
+redscale.util.decimalLength = function( aArray ) {
+  var aBitLen,
+      aDecLen;
+
+  if ( redscale.util.isZero( aArray ) ) {
+    return 1;
+  }
+
+  aBitLen = redscale.util.bitLength( aArray );
+  aDecLen = ((aBitLen / redscale.util.RADIX_BIT_INDEX[10]) + 1) | 0;
+
+  if ( redscale.util.compare( aArray, redscale.decimal.genPowerOfTen( aDecLen ) ) < 0 ) {
+    aDecLen++;
+  }
+
+  return aDecLen;
+};
+
+/**
  * Compare - Compares two arrays. Returns 1 if a is larger, -1 if b is larger, and 0 if they are equal.
  * @param {!Int16Array} aArray
  * @param {!Int16Array} bArray
@@ -316,7 +352,18 @@ redscale.util.compare = function( aArray, bArray ) {
  * @returns {!number}
  */
 redscale.util.compareExpo = function( aArray, aExpo, bArray, bExpo ) {
-  var eDiff = aExpo - bExpo;
+  var eDiff = aExpo - bExpo,
+      powerTen;
+
+  if ( eDiff !== 0 ) {
+    if ( eDiff < 0 ) {
+      powerTen = redscale.decimal.genPowerOfTen( -eDiff );
+      aArray = redscale.arithmetic.multiply( aArray, powerTen );
+    } else {
+      powerTen = redscale.decimal.genPowerOfTen( eDiff );
+      bArray = redscale.arithmetic.multiply( bArray, powerTen );
+    }
+  }
 
   return redscale.util.compare( aArray, bArray );
 };
