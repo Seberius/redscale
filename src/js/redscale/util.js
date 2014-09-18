@@ -332,11 +332,11 @@ redscale.util.compare = function( aArray, bArray ) {
   if ( aLen === 0 ) { return 0; }
 
   for ( aIndex = aLen - 1; aIndex >= 0; aIndex-- ) {
-    var aVal = (aArray[aIndex] & redscale.util.INT16_MASK),
-        bVal = (bArray[aIndex] & redscale.util.INT16_MASK);
+    var aInt = (aArray[aIndex] & redscale.util.INT16_MASK),
+        bInt = (bArray[aIndex] & redscale.util.INT16_MASK);
 
-    if ( aVal !== bVal ) {
-      if ( aVal > bVal ) { return 1; } else { return -1; }
+    if ( aInt !== bInt ) {
+      return aInt > bInt ? 1 : -1;
     }
   }
 
@@ -366,6 +366,35 @@ redscale.util.compareExpo = function( aArray, aExpo, bArray, bExpo ) {
   }
 
   return redscale.util.compare( aArray, bArray );
+};
+
+/**
+ * Compare Half
+ * @param {!Int16Array} aArray
+ * @param {!Int16Array} bArray
+ * @returns {!number}
+ */
+redscale.util.compareHalf = function( aArray, bArray ) {
+  var aLen = aArray.length,
+      bLen = bArray.length,
+      aIndex;
+
+  if ( aLen > bLen ) { return 1; }
+  if ( aLen < bLen - 1 ) { return -1; }
+  if ( aLen === 0 ) { return bLen === 0 ? 0 : -1; }
+
+  for ( aIndex = aLen - 1; aIndex >= 0; aIndex-- ) {
+    var aInt = (aArray[aIndex] & redscale.util.INT16_MASK),
+        bHigh = (bArray[aIndex] << 15) & redscale.util.INT16_MASK,
+        bLow = (bArray[aIndex] >>> 1) & redscale.util.INT16_MASK,
+        bInt = (bHigh + bLow) & redscale.util.INT16_MASK;
+
+    if ( aInt !== bInt ) {
+      return aInt > bInt ? 1 : -1;
+    }
+  }
+
+  return 0;
 };
 
 /**

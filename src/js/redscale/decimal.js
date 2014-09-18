@@ -42,3 +42,45 @@ redscale.decimal.genPowerOfTen = function( aInt ) {
 
   return rArray;
 };
+
+/**
+ * Check Rounding
+ * @param {!Int16Array} qArray
+ * @param {!number} qSign
+ * @param {!Int16Array} rArray
+ * @param {!Int16Array} dArray
+ * @param {!number} roundMode
+ * @returns {!Int16Array}
+ */
+redscale.decimal.checkRounding = function( qArray, qSign, rArray, dArray, roundMode ) {
+  var rdHalfComp = redscale.util.compareHalf( dArray, rArray ),
+      isQuotOdd = redscale.util.isOdd( qArray );
+
+  if ( !redscale.util.isZero() ) {
+    if ( roundMode === 0 ) {
+      return redscale.arithmetic.add( qArray, [1] );
+    } else if ( roundMode === 1 ) {
+      return qArray;
+    } else if ( roundMode === 2 ) {
+      return qSign > 0 ? redscale.arithmetic.add( qArray, [1] ) : qArray;
+    } else if ( roundMode === 3 ) {
+      return qSign < 0 ? redscale.arithmetic.add( qArray, [1] ) : qArray;
+    } else if ( rdHalfComp > 0 ) {
+      return redscale.arithmetic.add( qArray, [1] );
+    } else if ( rdHalfComp < 0 ) {
+      return qArray;
+    } else if ( roundMode === 4 ) {
+      return redscale.arithmetic.add( qArray, [1] );
+    } else if ( roundMode === 5 ) {
+      return qArray;
+    } else if ( roundMode === 6 ) {
+      return isQuotOdd ? redscale.arithmetic.add( qArray, [1] ) : qArray;
+    } else if ( roundMode === 7 ) {
+      return redscale.arithmetic.add( qArray, [1] );
+    } else {
+      throw new Error( "Unrecognized rounding mode." )
+    }
+  }
+
+  return qArray;
+};
