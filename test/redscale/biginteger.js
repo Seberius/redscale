@@ -36,8 +36,13 @@ describe( 'BigInteger', function() {
       .toBe( '67130286792085853841198890' );
   });
 
-  it( "fromString", function() {
+  it( "toString", function() {
     expect( BigInt3.toString() )
       .toBe( '544368789746413540798406790' );
   });
+
+  it( "toNumber", function() {
+    expect( BigInt1.toNumber() )
+      .toBe( 9.827349204720478e+25 );
+  })
 });

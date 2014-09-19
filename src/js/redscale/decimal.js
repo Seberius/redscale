@@ -23,7 +23,6 @@ redscale.decimal.genPowerOfTen = function( aInt ) {
     return redscale.decimal.POWERS_OF_TEN[aInt];
   }
 
-
   rArray = redscale.decimal.POWERS_OF_TEN[16];
   rBase = redscale.decimal.POWERS_OF_TEN[16];
   aInt -= 16;
